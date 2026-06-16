@@ -94,14 +94,15 @@ function updateNav(user) {
 
 async function updateCartBadge() {
   const badge = document.getElementById('cart-badge');
-  if (!badge) return;
+  const iconBadge = document.getElementById('cart-badge-icon');
   try {
     const data = await api('/api/cart');
     const count = data.items ? data.items.reduce((s, i) => s + i.quantity, 0) : 0;
-    badge.textContent = count;
-    badge.style.display = count > 0 ? 'inline' : 'none';
+    if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none'; }
+    if (iconBadge) { iconBadge.textContent = count; iconBadge.style.display = count > 0 ? 'inline' : 'none'; }
   } catch {
-    badge.style.display = 'none';
+    if (badge) badge.style.display = 'none';
+    if (iconBadge) iconBadge.style.display = 'none';
   }
 }
 
@@ -151,4 +152,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       addToCart(id, name, price, image);
     });
   });
+
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
+    });
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+      });
+    });
+  }
 });

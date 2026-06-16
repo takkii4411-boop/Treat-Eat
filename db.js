@@ -93,9 +93,11 @@ async function initDb() {
       product_name TEXT NOT NULL,
       quantity INTEGER NOT NULL,
       price REAL NOT NULL,
+      product_image TEXT DEFAULT '',
       FOREIGN KEY (order_id) REFERENCES orders(id)
     )
   `);
+  try { db.run("ALTER TABLE order_items ADD COLUMN product_image TEXT DEFAULT ''"); } catch (e) {}
 
   const count = db.exec("SELECT COUNT(*) as c FROM products");
   if (count.length === 0 || count[0].values[0][0] === 0) {

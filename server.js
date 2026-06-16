@@ -259,17 +259,16 @@ app.post('/api/orders/place', requireAuth, async (req, res) => {
     const userName = userResult[0].values[0][0];
     const userEmail = userResult[0].values[0][1];
     const items = getRows(cartResult).map(row => ({
-      productId: row[2], productName: row[3], productPrice: row[4], quantity: row[6]
+      productId: row[2], productName: row[3], productPrice: row[4], productImage: row[5], quantity: row[6]
     }));
     const total = items.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0);
     db.run("INSERT INTO orders (user_id, user_name, user_email, total, delivery_address, phone, notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [req.session.userId, userName, userEmail, total, delivery_address, phone, notes || '']);
-    saveDb();
-    const orderResult = db.exec("SELECT last_insert_rowid() as id");
+    const orderResult = db.exec("SELECT MAX(id) as id FROM orders");
     const orderId = orderResult[0].values[0][0];
-    const stmt = db.prepare("INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)");
+    const stmt = db.prepare("INSERT INTO order_items (order_id, product_id, product_name, quantity, price, product_image) VALUES (?, ?, ?, ?, ?, ?)");
     for (const item of items) {
-      stmt.run([orderId, item.productId, item.productName, item.quantity, item.productPrice]);
+      stmt.run([orderId, item.productId, item.productName, item.quantity, item.productPrice, item.productImage]);
     }
     stmt.free();
     db.run("DELETE FROM cart WHERE user_id = ?", [req.session.userId]);
@@ -288,7 +287,7 @@ app.get('/api/orders', requireAuth, async (req, res) => {
     const orderId = row[0];
     const itemsResult = db.exec("SELECT * FROM order_items WHERE order_id = ?", [orderId]);
     const items = getRows(itemsResult).map(ir => ({
-      id: ir[0], productId: ir[2], productName: ir[3], quantity: ir[4], price: ir[5]
+      id: ir[0], productId: ir[2], productName: ir[3], quantity: ir[4], price: ir[5], productImage: ir[6] || ''
     }));
     orders.push({
       id: orderId, userId: row[1], userName: row[2], userEmail: row[3],
@@ -309,7 +308,7 @@ app.get('/api/orders/:id', requireAuth, async (req, res) => {
   const row = result[0].values[0];
   const itemsResult = db.exec("SELECT * FROM order_items WHERE order_id = ?", [row[0]]);
   const items = getRows(itemsResult).map(ir => ({
-    id: ir[0], productId: ir[2], productName: ir[3], quantity: ir[4], price: ir[5]
+    id: ir[0], productId: ir[2], productName: ir[3], quantity: ir[4], price: ir[5], productImage: ir[6] || ''
   }));
   res.json({
     id: row[0], userId: row[1], userName: row[2], userEmail: row[3],
@@ -327,7 +326,7 @@ app.get('/api/admin/orders', requireAdmin, async (req, res) => {
     const orderId = row[0];
     const itemsResult = db.exec("SELECT * FROM order_items WHERE order_id = ?", [orderId]);
     const items = getRows(itemsResult).map(ir => ({
-      id: ir[0], productId: ir[2], productName: ir[3], quantity: ir[4], price: ir[5]
+      id: ir[0], productId: ir[2], productName: ir[3], quantity: ir[4], price: ir[5], productImage: ir[6] || ''
     }));
     orders.push({
       id: orderId, userId: row[1], userName: row[2], userEmail: row[3],

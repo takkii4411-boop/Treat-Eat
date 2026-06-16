@@ -10,11 +10,11 @@
 :root{--rose:#b03060;--rose-light:#e8a0bf;--rose-pale:#fde8f0;--ivory:#faf5ef;--ivory2:#f3ece2;--dark:#1a0a12;--dark2:#2d1520;--gold:#c9944a;--gold2:#e8c17a;--text:#1a0a12;--muted:#7a5060}
 body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text)}
 .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-.admin-sidebar{background:var(--dark);padding:2rem 1.5rem;color:#fff;position:fixed;top:0;left:0;bottom:0;width:220px;z-index:100}
+.admin-sidebar{background:var(--dark);padding:2rem 1.5rem;color:#fff;position:sticky;top:0;height:100vh;z-index:100}
 .admin-sidebar h2{font-family:'Great Vibes',cursive;font-size:1.5rem;color:var(--rose-light);margin-bottom:2rem}
 .admin-sidebar .nav-item{display:block;padding:.6rem 0;color:rgba(255,255,255,0.6);text-decoration:none;font-size:.85rem;cursor:pointer;transition:color .2s;border:none;background:none;width:100%;text-align:left}
 .admin-sidebar .nav-item:hover,.admin-sidebar .nav-item.active{color:#fff}
-.admin-main{margin-left:220px;padding:2rem;background:var(--ivory);min-height:100vh}
+.admin-main{padding:2rem;background:var(--ivory);min-height:100vh}
 .admin-main h1{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--dark2);margin-bottom:.3rem}
 .admin-main h1 em{font-style:italic;color:var(--rose)}
 .admin-sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem}
@@ -66,10 +66,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text)}
 .status-delivered{color:#2e7d32}
 .status-cancelled{color:#c62828}
 @media(max-width:768px){
-  .admin-sidebar{position:static;width:100%;padding:1rem 1.5rem}
-  .admin-sidebar h2{margin-bottom:1rem}
-  .admin-sidebar .nav-links{display:flex;gap:1rem}
-  .admin-main{margin-left:0}
+  .admin-sidebar{position:static;width:100%;padding:1rem 1.5rem;height:auto}
+  .admin-sidebar .nav-item{display:inline-block;padding:.4rem .6rem;font-size:.8rem}
+  .admin-main{padding:1rem}
   .admin-layout{grid-template-columns:1fr}
   .form-row{grid-template-columns:1fr}
 }
@@ -102,6 +101,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text)}
         <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
       </div>
       <div id="admin-products"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="adminOrderModal" onclick="if(event.target===this)closeAdminOrderDetail()">
+  <div class="modal" style="max-width:500px">
+    <h2>Order <em>Details</em></h2>
+    <div id="adminOrderDetailBody"></div>
+    <div style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="closeAdminOrderDetail()">Close</button>
     </div>
   </div>
 </div>
@@ -189,6 +199,7 @@ function switchTab(tab) {
 // ----- ORDERS -----
 async function loadOrders() {
   const orders = await fetch('/api/admin/orders').then(r => r.json());
+  adminOrders = orders;
   const container = document.getElementById('admin-orders');
 
   if (orders.length === 0) {
@@ -198,16 +209,20 @@ async function loadOrders() {
 
   container.innerHTML = orders.map(order => {
     const itemsHtml = order.items.map(item =>
-      `<div class="order-item" style="display:flex;justify-content:space-between;font-size:.8rem;padding:.2rem 0"><span>${item.productName} × ${item.quantity}</span><span>₹${item.price * item.quantity}</span></div>`
+      `<div class="item-row" style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;padding:.3rem 0">
+        <img src="${item.productImage || 'logo.png'}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0">
+        <span style="flex:1">${item.productName} × ${item.quantity}</span>
+        <span style="font-weight:500;color:var(--rose);white-space:nowrap">₹${item.price * item.quantity}</span>
+      </div>`
     ).join('');
 
-    return `<div class="admin-order-card">
+    return `<div class="admin-order-card" style="cursor:pointer" onclick="showAdminOrderDetail(${order.id})">
       <div class="admin-order-header">
         <div>
           <strong style="font-size:1rem">Order #${order.id}</strong>
           <div class="admin-order-meta">${new Date(order.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
         </div>
-        <select class="status-select" onchange="updateStatus(${order.id}, this.value)">
+        <select class="status-select" onclick="event.stopPropagation()" onchange="updateStatus(${order.id}, this.value)">
           <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
           <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
           <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Preparing</option>
@@ -219,12 +234,45 @@ async function loadOrders() {
       <div class="admin-order-meta">
         <strong>Customer:</strong> ${order.userName} (${order.userEmail})<br>
         <strong>Phone:</strong> ${order.phone}<br>
-        <strong>Address:</strong> ${order.deliveryAddress}${order.notes ? '<br><strong>Notes:</strong> '+order.notes : ''}
+        <strong>Address:</strong> ${order.deliveryAddress}
       </div>
-      <div style="margin-top:.7rem">${itemsHtml}</div>
+      <div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid rgba(176,48,96,0.08)">${itemsHtml}</div>
       <div style="margin-top:.5rem;font-weight:600;color:var(--rose)">Total: ₹${order.total}</div>
     </div>`;
   }).join('');
+}
+
+let adminOrders = [];
+
+function showAdminOrderDetail(orderId) {
+  const order = adminOrders.find(o => o.id === orderId);
+  if (!order) return;
+  const itemsHtml = order.items.map(item =>
+    `<div class="item-row" style="display:flex;align-items:center;gap:.6rem;padding:.3rem 0;font-size:.82rem;border-bottom:1px solid rgba(0,0,0,0.04)">
+      <img src="${item.productImage || 'logo.png'}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0">
+      <span style="flex:1">${item.productName} × ${item.quantity}</span>
+      <span style="color:var(--rose);font-weight:500;white-space:nowrap">₹${item.price * item.quantity}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('adminOrderDetailBody').innerHTML = `
+    <div style="margin-top:.8rem">
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Order</span><span style="font-weight:500">#${order.id}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Date</span><span>${new Date(order.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Status</span><span style="font-weight:500">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></div>
+      <div style="margin:.6rem 0;padding:.5rem 0;border-top:1px solid rgba(176,48,96,0.1);border-bottom:1px solid rgba(176,48,96,0.1)">${itemsHtml}</div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.9rem;font-weight:600"><span style="color:var(--muted)">Total</span><span style="color:var(--rose)">₹${order.total}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Customer</span><span style="text-align:right;max-width:250px">${order.userName}<br><span style="font-size:.78rem;color:var(--muted)">${order.userEmail}</span></span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Phone</span><span>${order.phone}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Address</span><span style="text-align:right;max-width:250px">${order.deliveryAddress}</span></div>
+      ${order.notes ? `<div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Notes</span><span style="text-align:right;max-width:250px">${order.notes}</span></div>` : ''}
+    </div>
+  `;
+  document.getElementById('adminOrderModal').classList.add('open');
+}
+
+function closeAdminOrderDetail() {
+  document.getElementById('adminOrderModal').classList.remove('open');
 }
 
 async function updateStatus(orderId, status) {

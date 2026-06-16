@@ -17,7 +17,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .nav-links{display:flex;gap:2.5rem;list-style:none}
 .nav-links a{text-decoration:none;font-size:.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);transition:color .2s;padding:2px 0}
 .nav-links a:hover{color:var(--rose)}
-@media(max-width:768px){nav{padding:.8rem 1.5rem}.nav-links{display:none}}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px;z-index:210}
+.hamburger span{display:block;width:24px;height:2px;background:var(--dark2);border-radius:2px;transition:transform .3s,opacity .3s}
+.hamburger.active span:nth-child(1){transform:translateY(7px)rotate(45deg)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:translateY(-7px)rotate(-45deg)}
+.nav-right{display:flex;align-items:center;gap:8px}
+@media(max-width:768px){
+  .hamburger{display:flex}
+  nav{padding:.8rem 1.5rem}
+  .nav-links{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(250,245,239,0.97);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;z-index:205;display:none}
+  .nav-links.active{display:flex}
+  .nav-links a{font-size:.85rem;font-weight:500}
+}
 </style>
 </head>
 <body>
@@ -26,6 +38,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
     <img src="logo.png" alt="Treat & Eat Logo" class="nav-logo-img">
     <span class="nav-brand">Treat & Eat</span>
   </a>
+  <div class="nav-right">
+    <button class="hamburger" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
     <li><a href="/orders.html">My Orders</a></li>
@@ -73,13 +92,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 </div>
 
 <script>
-async function loadCart() {
-  const user = await fetch('/api/auth/me').then(r => r.json());
-  if (!user.user) {
-    window.location.href = '/login.html';
-    return;
-  }
-
+async function loadCart(user) {
   const data = await fetch('/api/cart').then(r => r.json());
   const items = data.items || [];
   const container = document.getElementById('cart-items');
@@ -168,7 +181,34 @@ document.getElementById('order-form').addEventListener('submit', async function(
   }
 });
 
-loadCart();
+(async () => {
+  const userData = await fetch('/api/auth/me').then(r => r.json());
+  if (!userData.user) { window.location.href = '/login.html'; return; }
+
+  if (userData.user.isAdmin) {
+    const nav = document.querySelector('.nav-links');
+    const li = document.createElement('li');
+    li.innerHTML = '<a href="/admin.html">Admin</a>';
+    nav.appendChild(li);
+  }
+
+  loadCart(userData.user);
+
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
+    });
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+      });
+    });
+  }
+})();
 </script>
 </body>
 </html>

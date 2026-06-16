@@ -17,7 +17,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .nav-links{display:flex;gap:2.5rem;list-style:none}
 .nav-links a{text-decoration:none;font-size:.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);transition:color .2s}
 .nav-links a:hover{color:var(--rose)}
-@media(max-width:768px){nav{padding:.8rem 1.5rem}.nav-links{display:none}}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px;z-index:210}
+.hamburger span{display:block;width:24px;height:2px;background:var(--dark2);border-radius:2px;transition:transform .3s,opacity .3s}
+.hamburger.active span:nth-child(1){transform:translateY(7px)rotate(45deg)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:translateY(-7px)rotate(-45deg)}
+.nav-right{display:flex;align-items:center;gap:8px}
+@media(max-width:768px){
+  .hamburger{display:flex}
+  nav{padding:.8rem 1.5rem}
+  .nav-links{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(250,245,239,0.97);backdrop-filter:blur(20px);flex-direction:column;align-items:center;gap:.8rem;z-index:205;display:none;padding:90px 1.5rem 30px;overflow-y:auto;justify-content:flex-start}
+  .nav-links.active{display:flex}
+  .nav-links a{font-size:.82rem;font-weight:500}
+}
 </style>
 </head>
 <body>
@@ -26,7 +38,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
     <img src="logo.png" alt="Treat & Eat Logo" class="nav-logo-img">
     <span class="nav-brand">Treat & Eat</span>
   </a>
-  <ul class="nav-links">
+  <div class="nav-right">
+    <button class="hamburger" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+  <ul class="nav-links" id="orders-nav-links">
     <li><a href="/">Home</a></li>
     <li><a href="/cart.html">Cart</a></li>
   </ul>
@@ -46,15 +65,64 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
   <div id="orders-list"></div>
 </div>
 
-<script>
-async function loadOrders() {
-  const user = await fetch('/api/auth/me').then(r => r.json());
-  if (!user.user) {
-    window.location.href = '/login.html';
-    return;
-  }
+<div class="order-detail-modal" id="orderDetailModal" onclick="if(event.target===this)closeOrderDetail()">
+  <div class="order-detail-content">
+    <button class="order-detail-close" onclick="closeOrderDetail()">✕</button>
+    <h2>Order <em>Details</em></h2>
+    <div class="order-detail-body" id="orderDetailBody"></div>
+  </div>
+</div>
 
+<style>
+.order-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem}
+.order-detail-modal.open{display:flex}
+.order-detail-content{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:460px;max-height:85vh;overflow-y:auto}
+.order-detail-content h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--dark2);margin-bottom:.3rem}
+.order-detail-content h2 em{font-style:italic;color:var(--rose)}
+.order-detail-close{float:right;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);padding:.2rem}
+.order-detail-body{margin-top:1rem}
+.order-detail-body .row{display:flex;justify-content:space-between;padding:.4rem 0;font-size:.85rem;border-bottom:1px solid rgba(0,0,0,0.04)}
+.order-detail-body .row:last-child{border-bottom:none}
+.order-detail-body .label{color:var(--muted)}
+.order-detail-body .value{font-weight:500;color:var(--dark2);text-align:right}
+.order-detail-body .items{margin:.5rem 0;padding:.5rem 0;border-top:1px solid rgba(176,48,96,0.1);border-bottom:1px solid rgba(176,48,96,0.1)}
+.order-detail-body .item-row{display:flex;justify-content:space-between;padding:.3rem 0;font-size:.82rem}
+.order-detail-body .item-row .name{color:var(--dark2)}
+.order-detail-body .item-row .item-price{color:var(--muted)}
+</style>
+
+<script>
+let allOrders = [];
+
+function showOrderDetail(order) {
+  const body = document.getElementById('orderDetailBody');
+  const itemsHtml = order.items.map(item => `
+    <div class="item-row" style="display:flex;align-items:center;gap:.6rem">
+      <img src="${item.productImage || 'logo.png'}" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0">
+      <span class="name" style="flex:1">${item.productName} × ${item.quantity}</span>
+      <span class="item-price" style="white-space:nowrap">₹${item.price * item.quantity}</span>
+    </div>
+  `).join('');
+  body.innerHTML = `
+    <div class="row"><span class="label">Order</span><span class="value">#${order.id}</span></div>
+    <div class="row"><span class="label">Date</span><span class="value">${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></div>
+    <div class="row"><span class="label">Status</span><span class="value">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></div>
+    <div class="items">${itemsHtml}</div>
+    <div class="row" style="border-bottom:none;font-weight:600"><span class="label">Total</span><span class="value" style="color:var(--rose)">₹${order.total}</span></div>
+    <div class="row"><span class="label">Address</span><span class="value" style="text-align:right;max-width:220px">${order.deliveryAddress}</span></div>
+    ${order.phone ? `<div class="row"><span class="label">Phone</span><span class="value">${order.phone}</span></div>` : ''}
+    ${order.notes ? `<div class="row"><span class="label">Notes</span><span class="value" style="text-align:right;max-width:220px">${order.notes}</span></div>` : ''}
+  `;
+  document.getElementById('orderDetailModal').classList.add('open');
+}
+
+function closeOrderDetail() {
+  document.getElementById('orderDetailModal').classList.remove('open');
+}
+
+async function loadOrders(user) {
   const orders = await fetch('/api/orders').then(r => r.json());
+  allOrders = orders;
   const container = document.getElementById('orders-list');
   const emptyEl = document.getElementById('orders-empty');
 
@@ -68,30 +136,51 @@ async function loadOrders() {
 
   container.innerHTML = orders.map(order => {
     const statusClass = `status-${order.status.replace(/\s+/g, '-').toLowerCase()}`;
-    const itemsHtml = order.items.map(item => `
-      <div class="order-item">
-        <span>${item.productName} × ${item.quantity}</span>
-        <span>₹${item.price * item.quantity}</span>
-      </div>
-    `).join('');
-
     return `
-      <div class="order-card" style="margin-bottom:1rem">
-        <div class="order-header">
+      <div class="order-card" style="margin-bottom:.7rem" onclick="showOrderDetail(allOrders.find(o => o.id === ${order.id}))">
+        <div class="order-header" style="margin-bottom:0">
           <div>
             <div class="order-id">Order #${order.id}</div>
             <div class="order-date">${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
           </div>
-          <span class="order-status ${statusClass}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+          <div style="text-align:right">
+            <span class="order-status ${statusClass}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+            <div class="order-total" style="margin-top:.3rem;font-size:.9rem">₹${order.total}</div>
+          </div>
         </div>
-        <div class="order-items">${itemsHtml}</div>
-        <div class="order-total">Total: ₹${order.total}</div>
       </div>
     `;
   }).join('');
 }
 
-loadOrders();
+(async () => {
+  const userData = await fetch('/api/auth/me').then(r => r.json());
+  if (!userData.user) { window.location.href = '/login.html'; return; }
+
+  if (userData.user.isAdmin) {
+    const nav = document.getElementById('orders-nav-links');
+    const li = document.createElement('li');
+    li.innerHTML = '<a href="/admin.html">Admin</a>';
+    nav.appendChild(li);
+  }
+
+  loadOrders(userData.user);
+
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
+    });
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+      });
+    });
+  }
+})();
 </script>
 </body>
 </html>
