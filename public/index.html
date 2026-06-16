@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treat & Eat — Cake Shop & Bakery</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --rose:#b03060;
+  --rose-light:#e8a0bf;
+  --rose-pale:#fde8f0;
+  --ivory:#faf5ef;
+  --ivory2:#f3ece2;
+  --dark:#1a0a12;
+  --dark2:#2d1520;
+  --gold:#c9944a;
+  --gold2:#e8c17a;
+  --text:#1a0a12;
+  --muted:#7a5060;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text);overflow-x:hidden}
+
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 3rem;
+  background:rgba(250,245,239,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(176,48,96,0.12);
+}
+
+.nav-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.nav-logo-img {
+  height: 55px; 
+  width: auto;
+  border-radius: 50%; 
+  box-shadow: 0 2px 8px rgba(176,48,96,0.15);
+}
+.nav-brand{font-family:'Great Vibes',cursive;font-size:1.8rem;color:var(--rose);letter-spacing:.02em}
+
+
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{text-decoration:none;font-size:.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+.nav-links a:hover{color:var(--rose)}
+
+.hero{
+  min-height:100vh;background:var(--dark2);
+  display:grid;grid-template-columns:1fr 1fr;align-items:center;
+  position:relative;overflow:hidden;padding:6rem 3rem 4rem;gap:3rem;
+}
+.hero-bg-text{position:absolute;font-family:'Cormorant Garamond',serif;font-size:22vw;font-weight:700;color:rgba(255,255,255,0.025);top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;user-select:none;letter-spacing:-.02em}
+.hero-left{position:relative;z-index:2}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.6rem;font-size:.7rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gold2);margin-bottom:1.8rem}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';display:block;width:28px;height:1px;background:var(--gold)}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(3.5rem,6vw,5.5rem);font-weight:300;color:#fff;line-height:1.05;letter-spacing:-.02em;margin-bottom:.4rem}
+.hero h1 em{font-style:italic;color:var(--rose-light)}
+.hero h1 strong{font-weight:700;display:block}
+.hero-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.15rem;color:rgba(255,255,255,0.55);margin-bottom:2.5rem;letter-spacing:.04em}
+.hero-pills{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:2.8rem}
+.hero-pill{font-size:.7rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:.45rem 1.1rem;border:1px solid rgba(255,255,255,0.18);border-radius:999px;color:rgba(255,255,255,0.7)}
+.hero-cta{display:inline-flex;align-items:center;gap:.8rem;background:var(--rose);color:#fff;text-decoration:none;font-size:.8rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:.9rem 2.2rem;border-radius:999px;transition:background .2s,transform .15s}
+.hero-cta:hover{background:#8f2448;transform:translateY(-2px)}
+.hero-cta-arrow{font-size:1.1rem;transition:transform .2s}
+.hero-cta:hover .hero-cta-arrow{transform:translateX(4px)}
+.hero-right{position:relative;z-index:2;display:flex;align-items:center;justify-content:center}
+.hero-cake-frame{width:320px;height:320px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;position:relative}
+.hero-cake-frame::before{content:'';position:absolute;inset:12px;border-radius:50%;border:1px solid rgba(232,160,191,0.25)}
+.cake-inner{width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;overflow:hidden;}
+
+.cake-emoji-big{width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;}
+.cake-emoji-big img{width: 100%; height: 100%; object-fit: cover; border-radius: 50%;}
+
+.cake-name{font-family:'Great Vibes',cursive;font-size:1.4rem;color:var(--rose-light)}
+.cake-sub{font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.hero-orb{position:absolute;border-radius:50%;pointer-events:none}
+.orb1{width:400px;height:400px;background:radial-gradient(circle,rgba(176,48,96,0.25) 0%,transparent 70%);top:-100px;right:-100px}
+.orb2{width:300px;height:300px;background:radial-gradient(circle,rgba(201,148,74,0.15) 0%,transparent 70%);bottom:-80px;left:-80px}
+.hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:rgba(255,255,255,0.3);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;z-index:2}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,rgba(255,255,255,0.3),transparent)}
+
+.marquee-strip{background:var(--rose);padding:.8rem 0;overflow:hidden;display:flex;white-space:nowrap}
+.marquee-inner{display:inline-flex;gap:0;animation:scroll-left 20s linear infinite}
+.marquee-item{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#fff;padding:0 2rem;opacity:.9;display:flex;align-items:center;gap:1rem}
+.marquee-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.4);flex-shrink:0}
+@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.section{padding:6rem 3rem}
+.section-label{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rose);font-weight:500;margin-bottom:.8rem;display:flex;align-items:center;gap:.8rem}
+.section-label::after{content:'';flex:0 0 40px;height:1px;background:var(--rose);opacity:.4}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.2rem);font-weight:300;line-height:1.1;letter-spacing:-.01em;color:var(--dark2)}
+.section-title em{font-style:italic;color:var(--rose)}
+
+.baked-section{background:var(--ivory)}
+.baked-header{display:grid;grid-template-columns:1fr auto;align-items:end;margin-bottom:3.5rem;gap:2rem}
+.baked-desc{max-width:340px;color:var(--muted);font-size:.95rem;line-height:1.7;margin-top:1rem}
+.baked-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem}
+.baked-card{background:#fff;border:1px solid rgba(176,48,96,0.1);border-radius:20px;padding:2rem 1.5rem;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;cursor:default}
+.baked-card:hover{transform:translateY(-6px);border-color:rgba(176,48,96,0.3)}
+.baked-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--rose);opacity:0;transition:opacity .2s}
+.baked-card:hover::before{opacity:1}
+.baked-icon-wrap{width:50px;height:50px;border-radius:14px;background:var(--rose-pale);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:1.2rem}
+.baked-card h3{font-size:1rem;font-weight:500;margin-bottom:.4rem;color:var(--dark2)}
+.baked-card p{font-size:.82rem;color:var(--muted);line-height:1.5}
+.baked-card .tag{display:inline-block;margin-top:1rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rose);border:1px solid rgba(176,48,96,0.3);padding:.25rem .7rem;border-radius:999px}
+
+.occasions-section{background:var(--ivory2)}
+.occasions-section .section-intro{max-width:480px;color:var(--muted);font-size:.95rem;line-height:1.7;margin-top:.8rem}
+.occasion-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.occasion-card{background:#fff;border-radius:20px;overflow:hidden;border:1px solid rgba(176,48,96,0.1);transition:transform .2s,border-color .2s;display:flex;flex-direction:column}
+.occasion-card:hover{transform:translateY(-6px);border-color:rgba(176,48,96,0.3)}
+.occasion-card-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.occasion-card-body{padding:1.3rem 1.4rem 1.5rem;flex:1;display:flex;flex-direction:column}
+.occasion-card-name{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:600;color:var(--dark2);margin-bottom:.4rem}
+.occasion-card-desc{font-size:.82rem;color:var(--muted);line-height:1.55;flex:1}
+.occasion-card-footer{margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(176,48,96,0.1);display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.occasion-card-price-wrap{display:flex;flex-direction:column}
+.occasion-card-price-label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.occasion-card-price{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--rose)}
+.occasion-card-tag{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rose);border:1px solid rgba(176,48,96,0.3);padding:.3rem .7rem;border-radius:999px;white-space:nowrap}
+
+.cakes-section{background:var(--dark2);color:#fff}
+.cakes-section .section-label{color:var(--gold2)}
+.cakes-section .section-label::after{background:var(--gold);opacity:.4}
+.cakes-section .section-title{color:#fff}
+.cakes-section .section-title em{color:var(--rose-light)}
+.cakes-layout{display:grid;grid-template-columns:1fr;align-items:center;margin-top:3.5rem}
+.custom-box{background:var(--rose);border-radius:20px;padding:2rem 1.8rem; max-width: 600px; margin: 0 auto; text-align: center;}
+.custom-box h3{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:400;color:#fff;margin-bottom:.6rem}
+.custom-box p{font-size:.85rem;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:1.2rem}
+.custom-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:999px;padding:.45rem 1.1rem;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+
+
+.flavour-gallery-section{background:var(--dark)}
+.flavour-gallery-section .section-label{color:var(--rose-light)}
+.flavour-gallery-section .section-label::after{background:var(--rose-light);opacity:.4}
+.flavour-gallery-section .section-title{color:#fff}
+.flavour-gallery-section .section-title em{color:var(--gold2)}
+.flavour-gallery-section .section-intro{color:rgba(255,255,255,0.45);font-size:.9rem;margin-top:.6rem;max-width:480px;line-height:1.6}
+.flavour-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.flavour-card{background:#2a1620;border-radius:18px;overflow:hidden;border:1px solid rgba(232,160,191,0.08);transition:transform .2s,border-color .2s;display:flex;flex-direction:column}
+.flavour-card:hover{transform:translateY(-6px);border-color:rgba(232,160,191,0.35)}
+.flavour-card-img-wrap{position:relative}
+.flavour-card-img{width:100%;aspect-ratio:4/4;object-fit:cover;display:block}
+.flavour-card-body{padding:1.2rem 1.3rem 1.5rem;flex:1;display:flex;flex-direction:column;gap:.5rem}
+.flavour-card-name{font-size:1rem;font-weight:600;color:#fff;line-height:1.2;font-family:'DM Sans',sans-serif}
+.flavour-card-desc{font-size:.78rem;color:rgba(255,255,255,0.45);line-height:1.55;flex:1}
+.flavour-card-footer{margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between}
+.flavour-card-price{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:#fff}
+.flavour-card-base{font-size:.66rem;letter-spacing:.06em;color:rgba(255,255,255,0.3);text-transform:uppercase;font-weight:500;text-align:right}
+.flavour-veg-tag{display:inline-flex;align-items:center;gap:.35rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#2ecc40;font-weight:600;margin-top:.1rem}
+.pizza-veg-badge{
+  position:absolute;top:12px;left:12px;z-index:2;
+  width:20px;height:20px;border-radius:3px;
+  border:1.5px solid #2ecc40;
+  display:flex;align-items:center;justify-content:center;background:#111;
+}
+.pizza-veg-dot{width:8px;height:8px;border-radius:50%;background:#2ecc40}
+
+.pizza-section{background:#111;padding:6rem 3rem}
+.pizza-section .section-label{color:var(--gold2)}
+.pizza-section .section-label::after{background:var(--gold);opacity:.4}
+.pizza-section .section-title{color:#fff}
+.pizza-section .section-title em{color:#ff6b35}
+.pizza-section .section-intro{color:rgba(255,255,255,0.45);font-size:.9rem;margin-top:.6rem;max-width:480px;line-height:1.6}
+.pizza-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem;}
+.pizza-card-item{background:#1c1c1c;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);transition:transform .2s,border-color .2s;cursor:default;display:flex;flex-direction:column;}
+.pizza-card-item:hover{transform:translateY(-6px);border-color:rgba(255,107,53,0.4)}
+.pizza-card-img{width:100%;aspect-ratio:4/3;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden;}
+.pizza-card-img .pizza-bg-emoji{font-size:7rem;opacity:.15;filter:blur(4px);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.pizza-card-img .pizza-main-emoji{font-size:4.5rem;position:relative;z-index:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5));}
+.pizza-card-body{padding:1.2rem 1.3rem 1.5rem;flex:1;display:flex;flex-direction:column;gap:.5rem;}
+.pizza-card-name{font-size:1rem;font-weight:600;color:#fff;line-height:1.2;font-family:'DM Sans',sans-serif;}
+.pizza-card-desc{font-size:.78rem;color:rgba(255,255,255,0.45);line-height:1.55;flex:1;}
+.pizza-card-footer{margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
+.pizza-card-price{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:#fff;}
+.pizza-card-base{font-size:.68rem;letter-spacing:.06em;color:rgba(255,255,255,0.3);text-transform:uppercase;font-weight:500;}
+
+.contact-section{background:var(--dark2);padding:6rem 3rem;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.contact-left .section-label{color:var(--gold2)}
+.contact-left .section-label::after{background:var(--gold);opacity:.4}
+.contact-left .section-title{color:#fff}
+.contact-left .section-title em{color:var(--rose-light)}
+.contact-left p{color:rgba(255,255,255,0.55);font-size:.95rem;line-height:1.7;margin-top:1rem;max-width:360px}
+.contact-right{display:flex;flex-direction:column;gap:1rem}
+.contact-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:1.3rem 1.5rem;display:flex;align-items:center;gap:1rem;transition:border-color .2s}
+.contact-card:hover{border-color:rgba(232,160,191,0.3)}
+.contact-icon{width:42px;height:42px;border-radius:12px;background:rgba(176,48,96,0.25);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.contact-card .clabel{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:.2rem}
+.contact-card .cvalue{font-size:.95rem;font-weight:500;color:#fff}
+.contact-card a{color:#fff;text-decoration:none}
+.delivery-strip{margin-top:1.5rem;background:var(--rose);border-radius:14px;padding:1.1rem 1.5rem;display:flex;align-items:center;gap:.8rem}
+.delivery-strip .dicon{font-size:1.4rem}
+.delivery-strip p{font-size:.8rem;font-weight:500;letter-spacing:.05em;color:#fff;line-height:1.4}
+
+footer{background:var(--dark);padding:1.5rem 3rem;display:flex;justify-content:space-between;align-items:center}
+footer p{font-size:.75rem;color:rgba(255,255,255,0.3)}
+.footer-brand{font-family:'Great Vibes',cursive;font-size:1.4rem;color:var(--rose-light)}
+
+@media(max-width:900px){
+  .pizza-cards-grid{grid-template-columns:repeat(2,1fr)}
+  .occasion-grid{grid-template-columns:repeat(2,1fr)}
+  .flavour-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  nav{padding:.8rem 1.5rem}.nav-links{display:none}
+  .hero{grid-template-columns:1fr;padding:7rem 1.5rem 3rem;text-align:center}.hero-right{display:none}
+  .hero-pills{justify-content:center}
+  .baked-grid{grid-template-columns:1fr 1fr}
+  .baked-header{grid-template-columns:1fr}
+  .cakes-layout{grid-template-columns:1fr}
+  .pizza-cards-grid{grid-template-columns:1fr}
+  .occasion-grid{grid-template-columns:1fr}
+  .flavour-grid{grid-template-columns:1fr}
+  .contact-section{grid-template-columns:1fr}
+  .section,.pizza-section,.contact-section{padding:4rem 1.5rem}
+  footer{flex-direction:column;gap:.5rem;text-align:center}
+}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand-wrap">
+    <img src="logo.png" alt="Treat & Eat Logo" class="nav-logo-img">
+    <span class="nav-brand">Treat & Eat</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#treats">Treats</a></li>
+    <li><a href="#occasions">Themes</a></li>
+    <li><a href="#flavour-gallery">Flavours</a></li>
+    <li><a href="#pizza">Pizza</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <div class="hero-bg-text">Cake</div>
+  <div class="hero-left">
+    <div class="hero-eyebrow">Homemade with Love</div>
+    <h1><em>Treat</em><strong>&amp; Eat</strong></h1>
+    <p class="hero-tagline">Cake Shop &amp; Bakery · Est. by Puja Poddar</p>
+    <div class="hero-pills">
+      <div class="hero-pill">Custom Cakes</div>
+      <div class="hero-pill">Bento Cakes</div>
+      <div class="hero-pill">Cupcakes</div>
+      <div class="hero-pill">Pizza</div>
+    </div>
+    <a href="#treats" class="hero-cta">Explore Menu <span class="hero-cta-arrow">→</span></a>
+  </div>
+  <div class="hero-right">
+    <div class="hero-cake-frame">
+      <div class="cake-inner">
+        <div class="cake-emoji-big"><img src="logo.png" alt="Treat & Eat Logo"></div>
+        <div class="cake-name">Treat & Eat</div>
+        <div class="cake-sub">Cake Shop & Bakery</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll"><div class="scroll-line"></div>Scroll</div>
+</section>
+
+<div class="marquee-strip" aria-hidden="true">
+  <div class="marquee-inner">
+    <span class="marquee-item">Homemade Cakes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Cupcakes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Bento Cakes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Creations <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Fresh Pizza <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Home Delivery Available <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Order 1 Day Ahead <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Homemade Cakes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Cupcakes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Bento Cakes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Creations <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Fresh Pizza <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Home Delivery Available <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Order 1 Day Ahead <span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<section class="section baked-section" id="treats">
+  <div class="baked-header">
+    <div>
+      <div class="section-label">Our Specialties</div>
+      <h2 class="section-title">Baked <em>Treats</em></h2>
+      <p class="baked-desc">Every item is handcrafted from scratch — no shortcuts, only love and the finest ingredients.</p>
+    </div>
+  </div>
+  <div class="baked-grid">
+    <div class="baked-card">
+      <div class="baked-icon-wrap">🧁</div>
+      <h3>Cupcakes</h3>
+      <p>Fluffy, perfectly frosted mini delights for every mood.</p>
+      <span class="tag">Ready Daily</span>
+    </div>
+    <div class="baked-card">
+      <div class="baked-icon-wrap">🍰</div>
+      <h3>Pastry Cakes</h3>
+      <p>Elegant layered cakes with silky cream and seasonal flavours.</p>
+      <span class="tag">Ready Daily</span>
+    </div>
+    <div class="baked-card">
+      <div class="baked-icon-wrap">📦</div>
+      <h3>Bento Cakes</h3>
+      <p>Adorable single-serve cakes in cute little boxes — perfect gifts.</p>
+      <span class="tag">Order Ahead</span>
+    </div>
+    <div class="baked-card">
+      <div class="baked-icon-wrap">✨</div>
+      <h3>Custom Creations</h3>
+      <p>Your dream cake brought to life — any design, any occasion.</p>
+      <span class="tag">1 Day Advance</span>
+    </div>
+  </div>
+</section>
+
+<section class="section occasions-section" id="occasions">
+  <div class="section-label">Choose By Themes</div>
+  <h2 class="section-title">Cakes For Every <em>Occasion</em></h2>
+  <p class="section-intro">Our skilled bakers use high-quality ingredients to craft each themed cake with care — just let us know the occasion and we'll take it from there.</p>
+  <div class="occasion-grid">
+
+    <div class="occasion-card" data-product-id="1" data-product-name="Anniversary Party" data-product-price="699" data-product-image="images/Screenshot_2025-05-12_at_16-39-08_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_359d2150-3fa6-477e-8731-4a58321d865c.png">
+      <img class="occasion-card-img" src="images/Screenshot_2025-05-12_at_16-39-08_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_359d2150-3fa6-477e-8731-4a58321d865c.png" alt="Anniversary Cake">
+      <div class="occasion-card-body">
+        <div class="occasion-card-name">Anniversary Party</div>
+        <div class="occasion-card-desc">Thoughtful, customised cakes that celebrate years of love and togetherness.</div>
+        <div class="occasion-card-footer" style="flex-wrap:wrap;gap:.5rem">
+          <div class="occasion-card-price-wrap">
+            <span class="occasion-card-price-label">Starting at</span>
+            <span class="occasion-card-price">₹699</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span class="occasion-card-tag">1 Day Advance</span>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="1" data-product-name="Anniversary Party" data-product-price="699" data-product-image="images/Screenshot_2025-05-12_at_16-39-08_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_359d2150-3fa6-477e-8731-4a58321d865c.png">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="occasion-card" data-product-id="2" data-product-name="Birthday Party" data-product-price="599" data-product-image="images/Screenshot_2025-05-12_at_16-39-41_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_51ab2b30-5399-472b-925c-7f36be20e95e.png">
+      <img class="occasion-card-img" src="images/Screenshot_2025-05-12_at_16-39-41_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_51ab2b30-5399-472b-925c-7f36be20e95e.png" alt="Birthday Cake">
+      <div class="occasion-card-body">
+        <div class="occasion-card-name">Birthday Party</div>
+        <div class="occasion-card-desc">Playful, colourful designs that bring every birthday celebration to life.</div>
+        <div class="occasion-card-footer" style="flex-wrap:wrap;gap:.5rem">
+          <div class="occasion-card-price-wrap">
+            <span class="occasion-card-price-label">Starting at</span>
+            <span class="occasion-card-price">₹599</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span class="occasion-card-tag">1 Day Advance</span>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="2" data-product-name="Birthday Party" data-product-price="599" data-product-image="images/Screenshot_2025-05-12_at_16-39-41_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_51ab2b30-5399-472b-925c-7f36be20e95e.png">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="occasion-card" data-product-id="3" data-product-name="Farewell Party" data-product-price="649" data-product-image="images/Screenshot_2025-05-12_at_16-39-35_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_6de0b818-123a-4643-82e1-24ecd78a7db6.png">
+      <img class="occasion-card-img" src="images/Screenshot_2025-05-12_at_16-39-35_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_6de0b818-123a-4643-82e1-24ecd78a7db6.png" alt="Farewell Cake">
+      <div class="occasion-card-body">
+        <div class="occasion-card-name">Farewell Party</div>
+        <div class="occasion-card-desc">A sweet send-off with a design as memorable as the moment itself.</div>
+        <div class="occasion-card-footer" style="flex-wrap:wrap;gap:.5rem">
+          <div class="occasion-card-price-wrap">
+            <span class="occasion-card-price-label">Starting at</span>
+            <span class="occasion-card-price">₹649</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span class="occasion-card-tag">1 Day Advance</span>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="3" data-product-name="Farewell Party" data-product-price="649" data-product-image="images/Screenshot_2025-05-12_at_16-39-35_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_6de0b818-123a-4643-82e1-24ecd78a7db6.png">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="occasion-card" data-product-id="4" data-product-name="Gender Reveal Party" data-product-price="749" data-product-image="images/Screenshot_2025-05-12_at_16-39-14_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_058d97a9-25c5-43e8-bb88-4af03d61937f.png">
+      <img class="occasion-card-img" src="images/Screenshot_2025-05-12_at_16-39-14_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_058d97a9-25c5-43e8-bb88-4af03d61937f.png" alt="Gender Reveal Cake">
+      <div class="occasion-card-body">
+        <div class="occasion-card-name">Gender Reveal Party</div>
+        <div class="occasion-card-desc">Cute, surprise-filled designs to make your big announcement extra special.</div>
+        <div class="occasion-card-footer" style="flex-wrap:wrap;gap:.5rem">
+          <div class="occasion-card-price-wrap">
+            <span class="occasion-card-price-label">Starting at</span>
+            <span class="occasion-card-price">₹749</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span class="occasion-card-tag">1 Day Advance</span>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="4" data-product-name="Gender Reveal Party" data-product-price="749" data-product-image="images/Screenshot_2025-05-12_at_16-39-14_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_058d97a9-25c5-43e8-bb88-4af03d61937f.png">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="occasion-card" data-product-id="5" data-product-name="Wedding Party" data-product-price="1499" data-product-image="images/forever-together-engagement-cake_982ba8cc-2399-414e-a3cd-5565b180f276.png">
+      <img class="occasion-card-img" src="images/forever-together-engagement-cake_982ba8cc-2399-414e-a3cd-5565b180f276.png" alt="Wedding Cake">
+      <div class="occasion-card-body">
+        <div class="occasion-card-name">Wedding Party</div>
+        <div class="occasion-card-desc">Multi-tier showstoppers, beautifully crafted to match your big day.</div>
+        <div class="occasion-card-footer" style="flex-wrap:wrap;gap:.5rem">
+          <div class="occasion-card-price-wrap">
+            <span class="occasion-card-price-label">Starting at</span>
+            <span class="occasion-card-price">₹1499</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span class="occasion-card-tag">1 Day Advance</span>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="5" data-product-name="Wedding Party" data-product-price="1499" data-product-image="images/forever-together-engagement-cake_982ba8cc-2399-414e-a3cd-5565b180f276.png">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="occasion-card" data-product-id="6" data-product-name="Special Days Party" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 6.09.42 PM.jpeg">
+      <img class="occasion-card-img" src="images/WhatsApp Image 2026-06-14 at 6.09.42 PM.jpeg" alt="Special Days Cake">
+      <div class="occasion-card-body">
+        <div class="occasion-card-name">Special Days Party</div>
+        <div class="occasion-card-desc">For Mother's Day, Father's Day and every special day worth celebrating.</div>
+        <div class="occasion-card-footer" style="flex-wrap:wrap;gap:.5rem">
+          <div class="occasion-card-price-wrap">
+            <span class="occasion-card-price-label">Starting at</span>
+            <span class="occasion-card-price">₹549</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <span class="occasion-card-tag">1 Day Advance</span>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="6" data-product-name="Special Days Party" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 6.09.42 PM.jpeg">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section flavour-gallery-section" id="flavour-gallery">
+  <div class="section-label">Choose By Flavours</div>
+  <h2 class="section-title">Our Bestselling <em>Flavours</em></h2>
+  <p class="section-intro">Our skilled bakers use high-quality ingredients to craft each cake with care. Every flavour below is 100% vegetarian.</p>
+  <div class="flavour-grid">
+
+    <div class="flavour-card" data-product-id="7" data-product-name="Chocolate Cake" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 5.12.42 PM.jpeg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/WhatsApp Image 2026-06-14 at 5.12.42 PM.jpeg" alt="Chocolate Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Chocolate Cake</div>
+        <div class="flavour-card-desc">Rich, moist chocolate sponge layered with smooth chocolate cream.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹549</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="7" data-product-name="Chocolate Cake" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 5.12.42 PM.jpeg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="8" data-product-name="Vanilla Cake" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 5.14.51 PM.jpeg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/WhatsApp Image 2026-06-14 at 5.14.51 PM.jpeg" alt="Vanilla Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Vanilla Cake</div>
+        <div class="flavour-card-desc">Light, fluffy vanilla sponge finished with a delicate cream drip.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹549</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="8" data-product-name="Vanilla Cake" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 5.14.51 PM.jpeg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="9" data-product-name="Pineapple Cake" data-product-price="499" data-product-image="images/WhatsApp Image 2026-06-14 at 5.16.58 PM.jpeg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/WhatsApp Image 2026-06-14 at 5.16.58 PM.jpeg" alt="Pineapple Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Pineapple Cake</div>
+        <div class="flavour-card-desc">Classic fresh pineapple sponge with whipped cream and juicy fruit bits.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹499</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="9" data-product-name="Pineapple Cake" data-product-price="499" data-product-image="images/WhatsApp Image 2026-06-14 at 5.16.58 PM.jpeg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="10" data-product-name="Red Velvet Cake" data-product-price="599" data-product-image="images/WhatsApp Image 2026-06-14 at 5.23.39 PM.jpeg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/WhatsApp Image 2026-06-14 at 5.23.39 PM.jpeg" alt="Red Velvet Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Red Velvet Cake</div>
+        <div class="flavour-card-desc">Soft red velvet sponge with a tang of cocoa and silky cream cheese frosting.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹599</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="10" data-product-name="Red Velvet Cake" data-product-price="599" data-product-image="images/WhatsApp Image 2026-06-14 at 5.23.39 PM.jpeg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="11" data-product-name="Butterscotch Cake" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 5.21.12 PM.jpeg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/WhatsApp Image 2026-06-14 at 5.21.12 PM.jpeg" alt="Butterscotch Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Butterscotch Cake</div>
+        <div class="flavour-card-desc">Caramel-rich sponge loaded with crunchy praline bits and butterscotch cream.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹549</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="11" data-product-name="Butterscotch Cake" data-product-price="549" data-product-image="images/WhatsApp Image 2026-06-14 at 5.21.12 PM.jpeg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="12" data-product-name="Ferrero Rocher Cake" data-product-image="images/WhatsApp Image 2026-06-14 at 5.28.43 PM.jpeg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/WhatsApp Image 2026-06-14 at 5.28.43 PM.jpeg" alt="Ferrero Rocher Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Ferrero Rocher Cake</div>
+        <div class="flavour-card-desc">Decadent chocolate-hazelnut cake topped with Ferrero Rocher chocolates.</div>
+        <div class="flavour-card-footer">
+          <div class="flavour-card-price">Up Coming</div>
+          <span class="occasion-card-tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="13" data-product-name="Black Forest Cake" data-product-price="499" data-product-image="images/blackforest-10red.jpg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/blackforest-10red.jpg" alt="Black Forest Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Black Forest Cake</div>
+        <div class="flavour-card-desc">Chocolate sponge layered with cream and cherries, finished with chocolate shavings.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹499</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="13" data-product-name="Black Forest Cake" data-product-price="499" data-product-image="images/blackforest-10red.jpg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="14" data-product-name="Mango Cake" data-product-price="599" data-product-image="images/Pineapple Cake Design.jpg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/Pineapple Cake Design.jpg" alt="Mango Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Mango Cake</div>
+        <div class="flavour-card-desc">Fresh mango sponge with a luscious mango glaze — a seasonal favourite.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹599</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="14" data-product-name="Mango Cake" data-product-price="599" data-product-image="images/Pineapple Cake Design.jpg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flavour-card" data-product-id="15" data-product-name="Fresh Fruit Cake" data-product-price="649" data-product-image="images/WhatsApp Image 2026-06-14 at 5.34.27 PM.jpeg">
+      <div class="flavour-card-img-wrap">
+        <img class="flavour-card-img" src="images/WhatsApp Image 2026-06-14 at 5.34.27 PM.jpeg" alt="Fresh Fruit Cake">
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="flavour-card-body">
+        <div class="flavour-card-name">Fresh Fruit Cake</div>
+        <div class="flavour-card-desc">Vanilla sponge topped with whipped cream and a generous medley of fresh fruit.</div>
+        <div class="flavour-card-footer" style="flex-wrap:wrap;gap:.4rem">
+          <div class="flavour-card-price">₹649</div>
+          <div style="text-align:right">
+            <div class="flavour-card-base">for 1 pound</div>
+            <div class="flavour-veg-tag">● 100% Veg</div>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="15" data-product-name="Fresh Fruit Cake" data-product-price="649" data-product-image="images/WhatsApp Image 2026-06-14 at 5.34.27 PM.jpeg" style="margin-top:4px">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section cakes-section">
+  <div class="cakes-layout">
+    <div class="custom-box">
+      <h3>Need a Custom Creation?</h3>
+      <p>Want something truly one-of-a-kind? We bring your vision to life — from theme cakes to photo cakes and beyond.</p>
+      <div class="custom-badge">⏰ &nbsp;Order 1 Day in Advance</div>
+    </div>
+  </div>
+</section>
+
+<section class="pizza-section" id="pizza">
+  <div class="section-label">Also Serving</div>
+  <h2 class="section-title" style="color:#fff">Pizza <em style="color:#ff6b35">Parlour</em></h2>
+  <p class="section-intro">Freshly baked, crispy-base pizzas — every single one made on a hand-pressed, hand-tossed base. Real dough. Real love.</p>
+
+  <div class="pizza-cards-grid">
+
+    <div class="pizza-card-item" data-product-id="16" data-product-name="Onion Pizza" data-product-price="119" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.35.29 PM.jpeg">
+      <div class="pizza-card-img" style="background:#1f1509">
+        <div class="pizza-bg-emoji">🍕</div>
+        <div class="pizza-main-emoji">
+            <img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.35.29 PM.jpeg">
+        </div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Onion Pizza</div>
+        <div class="pizza-card-desc">Sweet caramelised onions layered over our hand-tossed base — simple, classic, and totally satisfying.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹119</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="16" data-product-name="Onion Pizza" data-product-price="119" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.35.29 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="17" data-product-name="Tomato Pizza" data-product-price="119" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.36.41 PM.jpeg">
+      <div class="pizza-card-img" style="background:#1f0d09">
+        <div class="pizza-bg-emoji">🍅</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.36.41 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Tomato Pizza</div>
+        <div class="pizza-card-desc">Juicy vine-ripened tomatoes over a rich tomato base — fresh, tangy, and bursting with flavour.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹119</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="17" data-product-name="Tomato Pizza" data-product-price="119" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.36.41 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="18" data-product-name="Corn Pizza" data-product-price="129" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.40.26 PM.jpeg">
+      <div class="pizza-card-img" style="background:#131a09">
+        <div class="pizza-bg-emoji">🌽</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.40.26 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Corn Pizza</div>
+        <div class="pizza-card-desc">Sweet golden corn kernels on a melty cheese bed — the kind of pizza that makes you smile with every bite.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹129</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="18" data-product-name="Corn Pizza" data-product-price="129" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.40.26 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="19" data-product-name="Capsicum Pizza" data-product-price="129" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.38.45 PM.jpeg">
+      <div class="pizza-card-img" style="background:#0f1a0a">
+        <div class="pizza-bg-emoji">🫑</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.38.45 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Capsicum Pizza</div>
+        <div class="pizza-card-desc">Crunchy green capsicum on a golden hand-tossed base — light, fresh, and satisfyingly crisp.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹129</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="19" data-product-name="Capsicum Pizza" data-product-price="129" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.38.45 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="20" data-product-name="Veg Pizza" data-product-price="149" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.44.06 PM.jpeg">
+      <div class="pizza-card-img" style="background:#141209">
+        <div class="pizza-bg-emoji">🥦</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.44.06 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Veg Pizza</div>
+        <div class="pizza-card-desc">The full garden experience — corn, onion & capsicum together on one cheesy hand-tossed base.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹149</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="20" data-product-name="Veg Pizza" data-product-price="149" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.44.06 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="21" data-product-name="Paneer Pizza" data-product-price="149" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.50.59 PM.jpeg">
+      <div class="pizza-card-img" style="background:#1a1009">
+        <div class="pizza-bg-emoji">🧀</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.50.59 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Paneer Pizza</div>
+        <div class="pizza-card-desc">Soft, pillowy paneer cubes on a cheesy base — rich, wholesome, and made for paneer lovers.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹149</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="21" data-product-name="Paneer Pizza" data-product-price="149" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.50.59 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="22" data-product-name="Paneer + Onion" data-product-price="149" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.46.56 PM.jpeg">
+      <div class="pizza-card-img" style="background:#1a1209">
+        <div class="pizza-bg-emoji">🧅</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.46.56 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Paneer + Onion</div>
+        <div class="pizza-card-desc">The classic duo — paneer's richness balanced by the sweetness of caramelised onion on every slice.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹149</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="22" data-product-name="Paneer + Onion" data-product-price="149" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.46.56 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="23" data-product-name="Paneer + Capsicum" data-product-price="159" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.47.48 PM.jpeg">
+      <div class="pizza-card-img" style="background:#0f160a">
+        <div class="pizza-bg-emoji">🫑</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.47.48 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Paneer + Capsicum</div>
+        <div class="pizza-card-desc">Paneer's creaminess meets capsicum's crunch — a fresh, vibrant combo that hits just right.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹159</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="23" data-product-name="Paneer + Capsicum" data-product-price="159" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.47.48 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="24" data-product-name="Paneer + Corn" data-product-price="159" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.54.32 PM.jpeg">
+      <div class="pizza-card-img" style="background:#131a09">
+        <div class="pizza-bg-emoji">🌽</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.54.32 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Paneer + Corn</div>
+        <div class="pizza-card-desc">Sweet corn pops alongside soft paneer — a match made for those who love texture in every bite.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹159</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="24" data-product-name="Paneer + Corn" data-product-price="159" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.54.32 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="25" data-product-name="Loaded Veg Pizza" data-product-price="189" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 6.01.12 PM.jpeg">
+      <div class="pizza-card-img" style="background:#181209">
+        <div class="pizza-bg-emoji">🍕</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 6.01.12 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Paneer + Capsicum + Onion + Corn</div>
+        <div class="pizza-card-desc">Our ultimate loaded veg pizza — four flavours, one glorious hand-tossed base. No compromises.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹189</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="25" data-product-name="Loaded Veg Pizza" data-product-price="189" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 6.01.12 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="26" data-product-name="Baby Corn Pizza" data-product-price="229" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.59.41 PM.jpeg">
+      <div class="pizza-card-img" style="background:#131a09">
+        <div class="pizza-bg-emoji">🌽</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 5.59.41 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Baby Corn Pizza</div>
+        <div class="pizza-card-desc">Tender baby corn — delicate, buttery, and beautifully different. A gourmet twist on the classic.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹229</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="26" data-product-name="Baby Corn Pizza" data-product-price="229" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 5.59.41 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pizza-card-item" data-product-id="27" data-product-name="Extra Cheese Veg Pizza" data-product-price="239" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 6.02.57 PM.jpeg">
+      <div class="pizza-card-img" style="background:#1a1509">
+        <div class="pizza-bg-emoji">🧀</div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="pizza_images/WhatsApp Image 2026-06-14 at 6.02.57 PM.jpeg"></div>
+        <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">Extra Cheese Veg Pizza</div>
+        <div class="pizza-card-desc">Double the cheese, double the joy — our most indulgent veg pizza loaded till the last edge.</div>
+        <div class="pizza-card-footer">
+          <div>
+            <div class="pizza-card-price">₹239</div>
+            <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
+          </div>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="27" data-product-name="Extra Cheese Veg Pizza" data-product-price="239" data-product-image="pizza_images/WhatsApp Image 2026-06-14 at 6.02.57 PM.jpeg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="contact-section" id="contact">
+  <div class="contact-left">
+    <div class="section-label">Get in Touch</div>
+    <h2 class="section-title">Order <em>Your Cake</em></h2>
+    <p>We'd love to make something special for you. Reach out via call or Instagram — custom cakes need 1 day advance notice!</p>
+  </div>
+  <div class="contact-right">
+    <div class="contact-card">
+      <div class="contact-icon">👩‍🍳</div>
+      <div><div class="clabel">Shop Owner</div><div class="cvalue">Puja Poddar</div></div>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">📞</div>
+      <div><div class="clabel">Call / WhatsApp</div><div class="cvalue"><a href="tel:9142406269">9142406269</a></div></div>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">📸</div>
+      <div><div class="clabel">Instagram</div><div class="cvalue"><a href="https://instagram.com/treat_and.eat" target="_blank">@treat_and.eat</a></div></div>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">✨</div>
+      <div><div class="clabel">Also Follow</div><div class="cvalue"><a href="https://instagram.com/trisha_somya0325" target="_blank">@trisha_somya0325</a></div></div>
+    </div>
+    <div class="delivery-strip">
+      <span class="dicon">🛵</span>
+      <p>Home Delivery Available<br>Order at least 1 day in advance</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-brand">Treat & Eat</span>
+  <p>© 2025 Treat & Eat Cake Shop & Bakery · Puja Poddar · 9142406269</p>
+</footer>
+<script src="js/script.js"></script>
+<script>
+  if (history.scrollRestoration) {
+    history.scrollRestoration = 'manual';
+  }
+  if (window.location.hash) {
+    history.replaceState(null, null, window.location.pathname + window.location.search);
+  }
+  document.documentElement.style.scrollBehavior = 'auto';
+  window.scrollTo(0, 0);
+  setTimeout(function() {
+    document.documentElement.style.scrollBehavior = 'smooth';
+  }, 50);
+</script>
+</body>
+</html>

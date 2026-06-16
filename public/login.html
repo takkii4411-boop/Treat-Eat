@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Treat & Eat</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--rose:#b03060;--rose-light:#e8a0bf;--rose-pale:#fde8f0;--ivory:#faf5ef;--ivory2:#f3ece2;--dark:#1a0a12;--dark2:#2d1520;--gold:#c9944a;--gold2:#e8c17a;--text:#1a0a12;--muted:#7a5060}
+body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text)}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(250,245,239,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(176,48,96,0.12)}
+.nav-brand-wrap{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nav-logo-img{height:55px;width:auto;border-radius:50%;box-shadow:0 2px 8px rgba(176,48,96,0.15)}
+.nav-brand{font-family:'Great Vibes',cursive;font-size:1.8rem;color:var(--rose);letter-spacing:.02em}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{text-decoration:none;font-size:.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+.nav-links a:hover{color:var(--rose)}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-brand-wrap">
+    <img src="logo.png" alt="Treat & Eat Logo" class="nav-logo-img">
+    <span class="nav-brand">Treat & Eat</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+  </ul>
+</nav>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Welcome <em>Back</em></h1>
+    <p class="auth-sub">Login to order your favourite treats</p>
+    <div class="auth-error" id="login-error"></div>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="Enter your password">
+      </div>
+      <button type="submit" class="btn-primary">Login</button>
+    </form>
+    <div class="auth-footer">
+      Don't have an account? <a href="/register.html">Register</a>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const errorEl = document.getElementById('login-error');
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  try {
+    const data = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    }).then(r => r.json());
+    if (data.success) {
+      if (data.isAdmin) {
+        window.location.href = '/admin.html';
+      } else {
+        window.location.href = '/';
+      }
+    } else {
+      errorEl.textContent = data.error || 'Login failed';
+      errorEl.style.display = 'block';
+    }
+  } catch (e) {
+    errorEl.textContent = 'Network error. Please try again.';
+    errorEl.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart — Treat & Eat</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--rose:#b03060;--rose-light:#e8a0bf;--rose-pale:#fde8f0;--ivory:#faf5ef;--ivory2:#f3ece2;--dark:#1a0a12;--dark2:#2d1520;--gold:#c9944a;--gold2:#e8c17a;--text:#1a0a12;--muted:#7a5060}
+body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text)}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(250,245,239,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(176,48,96,0.12)}
+.nav-brand-wrap{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nav-logo-img{height:55px;width:auto;border-radius:50%;box-shadow:0 2px 8px rgba(176,48,96,0.15)}
+.nav-brand{font-family:'Great Vibes',cursive;font-size:1.8rem;color:var(--rose);letter-spacing:.02em}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{text-decoration:none;font-size:.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);transition:color .2s;padding:2px 0}
+.nav-links a:hover{color:var(--rose)}
+@media(max-width:768px){nav{padding:.8rem 1.5rem}.nav-links{display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-brand-wrap">
+    <img src="logo.png" alt="Treat & Eat Logo" class="nav-logo-img">
+    <span class="nav-brand">Treat & Eat</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/orders.html">My Orders</a></li>
+  </ul>
+</nav>
+
+<div class="page-section">
+  <h1>Shopping <em>Cart</em></h1>
+  <p class="page-sub" id="cart-count">Review your items before placing an order</p>
+
+  <div id="cart-empty" class="empty-state" style="display:none">
+    <div class="big-icon">🛒</div>
+    <h3>Your cart is empty</h3>
+    <p>Looks like you haven't added anything yet.</p>
+    <a href="/" class="hero-cta" style="display:inline-flex">Browse Menu</a>
+  </div>
+
+  <div id="cart-content" style="display:none">
+    <div id="cart-items"></div>
+    <div class="cart-summary">
+      <div class="cart-summary-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+      <div class="cart-summary-row cart-summary-total"><span>Total</span><span id="cart-total">₹0</span></div>
+    </div>
+
+    <div style="margin-top:2rem;background:#fff;border:1px solid rgba(176,48,96,0.1);border-radius:16px;padding:1.5rem">
+      <h3 style="font-size:1.1rem;margin-bottom:1rem;color:var(--dark2)">Delivery Details</h3>
+      <div class="auth-error" id="order-error"></div>
+      <form id="order-form">
+        <div class="form-group">
+          <label for="delivery-address">Delivery Address</label>
+          <textarea id="delivery-address" required placeholder="Enter your full delivery address"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="delivery-phone">Phone Number</label>
+          <input type="tel" id="delivery-phone" required placeholder="Phone number for contact">
+        </div>
+        <div class="form-group">
+          <label for="order-notes">Notes (Optional)</label>
+          <textarea id="order-notes" placeholder="Any special instructions?"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Place Order</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadCart() {
+  const user = await fetch('/api/auth/me').then(r => r.json());
+  if (!user.user) {
+    window.location.href = '/login.html';
+    return;
+  }
+
+  const data = await fetch('/api/cart').then(r => r.json());
+  const items = data.items || [];
+  const container = document.getElementById('cart-items');
+  const emptyEl = document.getElementById('cart-empty');
+  const contentEl = document.getElementById('cart-content');
+  const countEl = document.getElementById('cart-count');
+
+  if (items.length === 0) {
+    emptyEl.style.display = 'block';
+    contentEl.style.display = 'none';
+    countEl.textContent = 'Your cart is empty';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  contentEl.style.display = 'block';
+  countEl.textContent = `${items.reduce((s,i) => s + i.quantity, 0)} item(s) in your cart`;
+
+  container.innerHTML = items.map(item => `
+    <div class="cart-item" data-cart-id="${item.id}">
+      <img class="cart-item-img" src="${item.productImage || 'logo.png'}" alt="${item.productName}">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.productName}</div>
+        <div class="cart-item-price">₹${item.productPrice} × ${item.quantity} = ₹${item.productPrice * item.quantity}</div>
+      </div>
+      <div class="cart-item-qty">
+        <button onclick="updateQty(${item.id}, ${item.quantity - 1})">−</button>
+        <span>${item.quantity}</span>
+        <button onclick="updateQty(${item.id}, ${item.quantity + 1})">+</button>
+      </div>
+      <button class="cart-item-remove" onclick="removeItem(${item.id})">✕</button>
+    </div>
+  `).join('');
+
+  const total = items.reduce((s, i) => s + i.productPrice * i.quantity, 0);
+  document.getElementById('cart-subtotal').textContent = `₹${total}`;
+  document.getElementById('cart-total').textContent = `₹${total}`;
+}
+
+async function updateQty(cartId, qty) {
+  if (qty < 1) {
+    await removeItem(cartId);
+    return;
+  }
+  await fetch('/api/cart/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cart_id: cartId, quantity: qty })
+  });
+  loadCart();
+}
+
+async function removeItem(cartId) {
+  await fetch('/api/cart/remove', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cart_id: cartId })
+  });
+  loadCart();
+}
+
+document.getElementById('order-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const errorEl = document.getElementById('order-error');
+  const btn = this.querySelector('button');
+  btn.disabled = true;
+  btn.textContent = 'Placing Order...';
+
+  const data = await fetch('/api/orders/place', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      delivery_address: document.getElementById('delivery-address').value,
+      phone: document.getElementById('delivery-phone').value,
+      notes: document.getElementById('order-notes').value
+    })
+  }).then(r => r.json());
+
+  if (data.success) {
+    window.location.href = `/orders.html?order=${data.orderId}`;
+  } else {
+    errorEl.textContent = data.error || 'Failed to place order';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Place Order';
+  }
+});
+
+loadCart();
+</script>
+</body>
+</html>
