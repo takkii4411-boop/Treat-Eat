@@ -99,6 +99,24 @@ async function initDb() {
   `);
   try { db.run("ALTER TABLE order_items ADD COLUMN product_image TEXT DEFAULT ''"); } catch (e) {}
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT UNIQUE NOT NULL,
+      label TEXT NOT NULL,
+      icon TEXT DEFAULT '📦',
+      sort_order INTEGER DEFAULT 0
+    )
+  `);
+
+  const catCount = db.exec("SELECT COUNT(*) as c FROM categories");
+  if (catCount.length === 0 || catCount[0].values[0][0] === 0) {
+    db.run("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['occasion', 'Occasion Cakes', '🎂', 1]);
+    db.run("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['flavour', 'Flavour Cakes', '🍰', 2]);
+    db.run("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['pizza', 'Pizza', '🍕', 3]);
+    saveDb();
+  }
+
   const count = db.exec("SELECT COUNT(*) as c FROM products");
   if (count.length === 0 || count[0].values[0][0] === 0) {
     seedProducts(db);

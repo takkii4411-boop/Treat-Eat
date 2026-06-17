@@ -3,6 +3,8 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
+const multer = require('multer');
 const { initDb, getDb, saveDb } = require('./db');
 
 const app = express();
@@ -315,6 +317,99 @@ app.get('/api/orders/:id', requireAuth, async (req, res) => {
     total: row[4], status: row[5], deliveryAddress: row[6],
     phone: row[7], notes: row[8], createdAt: row[9], items
   });
+});
+
+// Image upload config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const category = req.body.category || 'occasion';
+    const dir = category === 'pizza' ? 'public/pizza_images' : 'public/images';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const name = Date.now() + '-' + Math.round(Math.random() * 1E9) + ext;
+    cb(null, name);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|gif|webp|svg/;
+    const ok = allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype.split('/')[1]);
+    cb(null, ok);
+  }
+});
+
+app.post('/api/admin/upload', requireAdmin, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const category = req.body.category || 'occasion';
+    const prefix = category === 'pizza' ? 'pizza_images' : 'images';
+    const imagePath = prefix + '/' + req.file.filename;
+    res.json({ path: imagePath });
+  });
+});
+
+// Categories API (public)
+app.get('/api/categories', async (req, res) => {
+  const db = await getDb();
+  const result = db.exec("SELECT * FROM categories ORDER BY sort_order");
+  const cats = getRows(result).map(row => ({ id: row[0], key: row[1], label: row[2], icon: row[3], sortOrder: row[4] }));
+  res.json(cats);
+});
+
+app.post('/api/admin/categories', requireAdmin, async (req, res) => {
+  try {
+    let { key, label, icon, sort_order } = req.body;
+    if (!key || !label) return res.status(400).json({ error: 'Key and label are required' });
+    key = key.trim().toLowerCase().replace(/\s+/g, '_');
+    const db = await getDb();
+    db.run("INSERT INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)",
+      [key, label, icon || '', sort_order != null ? parseInt(sort_order) : 0]);
+    saveDb();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/admin/categories/:id', requireAdmin, async (req, res) => {
+  try {
+    let { key, label, icon, sort_order } = req.body;
+    const db = await getDb();
+    if (key) key = key.trim().toLowerCase().replace(/\s+/g, '_');
+    const old = db.exec("SELECT key FROM categories WHERE id = ?", [req.params.id]);
+    const oldKey = old.length > 0 && old[0].values.length > 0 ? old[0].values[0][0] : null;
+    db.run("UPDATE categories SET key=?, label=?, icon=?, sort_order=? WHERE id=?",
+      [key || '', label || '', icon || '', sort_order != null ? parseInt(sort_order) : 0, req.params.id]);
+    if (oldKey && key && oldKey !== key) {
+      db.run("UPDATE products SET category = ? WHERE category = ?", [key, oldKey]);
+    }
+    saveDb();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/admin/categories/:id', requireAdmin, async (req, res) => {
+  try {
+    const db = await getDb();
+    const cat = db.exec("SELECT key FROM categories WHERE id = ?", [req.params.id]);
+    if (cat.length > 0 && cat[0].values.length > 0) {
+      const key = cat[0].values[0][0];
+      db.run("UPDATE products SET category = 'uncategorized' WHERE category = ?", [key]);
+    }
+    db.run("DELETE FROM categories WHERE id = ?", [req.params.id]);
+    saveDb();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Admin API

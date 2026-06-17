@@ -143,14 +143,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = await checkAuth();
   updateNav(user);
 
-  document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const id = this.dataset.productId;
-      const name = this.dataset.productName;
-      const price = parseFloat(this.dataset.productPrice);
-      const image = this.dataset.productImage || '';
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.add-to-cart-btn');
+    if (btn) {
+      const id = btn.dataset.productId;
+      const name = btn.dataset.productName;
+      const price = parseFloat(btn.dataset.productPrice);
+      const image = btn.dataset.productImage || '';
       addToCart(id, name, price, image);
-    });
+    }
   });
 
   const hamburger = document.querySelector('.hamburger');
