@@ -1,37 +1,33 @@
-const initSqlJs = require('sql.js');
-const fs = require('fs');
+const { createClient } = require('@libsql/client');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'data.db');
-
-let db = null;
+let client = null;
 
 async function getDb() {
-  if (db) return db;
-  const SQL = await initSqlJs();
-  if (fs.existsSync(DB_PATH)) {
-    const buffer = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(buffer);
-  } else {
-    db = new SQL.Database();
-  }
-  return db;
+  if (client) return client;
+
+  const url = process.env.TURSO_URL || ('file:' + path.join(__dirname, 'data.db'));
+  const authToken = process.env.TURSO_TOKEN;
+
+  client = createClient({
+    url,
+    ...(authToken ? { authToken } : {}),
+    syncUrl: process.env.TURSO_SYNC_URL || undefined,
+  });
+
+  console.log('[db] connected:', url.includes('file:') ? 'local data.db' : url);
+  return client;
 }
 
-function saveDb() {
-  if (!db) { console.log('[saveDb] SKIP — db is null'); return; }
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  const before = fs.existsSync(DB_PATH) ? fs.statSync(DB_PATH).size : 0;
-  fs.writeFileSync(DB_PATH, buffer);
-  const after = fs.statSync(DB_PATH).size;
-  console.log(`[saveDb] exported=${data.length}B file=${before}B->${after}B ok`);
+function getRows(result) {
+  return result && result.rows ? result.rows : [];
 }
 
 async function initDb() {
   const db = await getDb();
 
-  db.run(`
+  // Users table
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -44,7 +40,8 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  // Products table
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -58,7 +55,8 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  // Cart table
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS cart (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -72,7 +70,8 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  // Orders table
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -88,7 +87,8 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  // Order items table
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS order_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       order_id INTEGER NOT NULL,
@@ -100,9 +100,11 @@ async function initDb() {
       FOREIGN KEY (order_id) REFERENCES orders(id)
     )
   `);
-  try { db.run("ALTER TABLE order_items ADD COLUMN product_image TEXT DEFAULT ''"); } catch (e) {}
 
-  db.run(`
+  try { await db.execute("ALTER TABLE order_items ADD COLUMN product_image TEXT DEFAULT ''"); } catch (e) {}
+
+  // Categories table
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       key TEXT UNIQUE NOT NULL,
@@ -112,31 +114,32 @@ async function initDb() {
     )
   `);
 
-  const catCount = db.exec("SELECT COUNT(*) as c FROM categories");
-  if (catCount.length === 0 || catCount[0].values[0][0] === 0) {
-    db.run("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['occasion', 'Occasion Cakes', '🎂', 1]);
-    db.run("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['flavour', 'Flavour Cakes', '🍰', 2]);
-    db.run("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['pizza', 'Pizza', '🍕', 3]);
-    saveDb();
+  // Seed categories
+  const catResult = await db.execute("SELECT COUNT(*) as c FROM categories");
+  if (catResult.rows.length === 0 || catResult.rows[0][0] === 0) {
+    await db.execute("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['occasion', 'Occasion Cakes', '🎂', 1]);
+    await db.execute("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['flavour', 'Flavour Cakes', '🍰', 2]);
+    await db.execute("INSERT OR IGNORE INTO categories (key, label, icon, sort_order) VALUES (?, ?, ?, ?)", ['pizza', 'Pizza', '🍕', 3]);
   }
 
-  const count = db.exec("SELECT COUNT(*) as c FROM products");
-  if (count.length === 0 || count[0].values[0][0] === 0) {
-    seedProducts(db);
+  // Seed products
+  const prodResult = await db.execute("SELECT COUNT(*) as c FROM products");
+  if (prodResult.rows.length === 0 || prodResult.rows[0][0] === 0) {
+    await seedProducts(db);
   }
 
-  const adminCount = db.exec("SELECT COUNT(*) as c FROM users WHERE is_admin = 1");
-  if (adminCount.length === 0 || adminCount[0].values[0][0] === 0) {
+  // Seed admin
+  const adminResult = await db.execute("SELECT COUNT(*) as c FROM users WHERE is_admin = 1");
+  if (adminResult.rows.length === 0 || adminResult.rows[0][0] === 0) {
     const bcrypt = require('bcryptjs');
     const hash = bcrypt.hashSync('admin123', 10);
-    db.run("INSERT INTO users (name, email, password, is_admin) VALUES (?, ?, ?, 1)", ['Admin', 'admin@treateat.com', hash]);
+    await db.execute("INSERT INTO users (name, email, password, is_admin) VALUES (?, ?, ?, 1)", ['Admin', 'admin@treateat.com', hash]);
   }
 
-  saveDb();
   return db;
 }
 
-function seedProducts(db) {
+async function seedProducts(db) {
   const products = [
     { name: 'Anniversary Party', category: 'occasion', description: 'Thoughtful, customised cakes that celebrate years of love and togetherness.', price: 699, image: 'images/Screenshot_2025-05-12_at_16-39-08_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_359d2150-3fa6-477e-8731-4a58321d865c.png', tag: '1 Day Advance' },
     { name: 'Birthday Party', category: 'occasion', description: 'Playful, colourful designs that bring every birthday celebration to life.', price: 599, image: 'images/Screenshot_2025-05-12_at_16-39-41_Buy_Fresh_Custom_Cakes_Desserts_online_Free_delivery_51ab2b30-5399-472b-925c-7f36be20e95e.png', tag: '1 Day Advance' },
@@ -167,11 +170,10 @@ function seedProducts(db) {
     { name: 'Extra Cheese Veg Pizza', category: 'pizza', description: 'Double the cheese, double the joy — our most indulgent veg pizza loaded till the last edge.', price: 239, image: 'pizza_images/WhatsApp Image 2026-06-14 at 6.02.57 PM.jpeg', tag: 'Hand Made Base' },
   ];
 
-  const stmt = db.prepare("INSERT INTO products (name, category, description, price, image, tag) VALUES (?, ?, ?, ?, ?, ?)");
   for (const p of products) {
-    stmt.run([p.name, p.category, p.description, p.price, p.image, p.tag]);
+    await db.execute("INSERT INTO products (name, category, description, price, image, tag) VALUES (?, ?, ?, ?, ?, ?)",
+      [p.name, p.category, p.description, p.price, p.image, p.tag]);
   }
-  stmt.free();
 }
 
-module.exports = { initDb, getDb, saveDb };
+module.exports = { initDb, getDb, getRows };
