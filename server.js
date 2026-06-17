@@ -496,10 +496,14 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
 app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
   try {
     const db = await getDb();
+    const before = db.exec("SELECT COUNT(*) as c FROM products");
     db.run("DELETE FROM products WHERE id = ?", [req.params.id]);
+    const after = db.exec("SELECT COUNT(*) as c FROM products");
     saveDb();
+    console.log(`[DELETE /api/admin/products/${req.params.id}] products: ${before[0]?.values?.[0]?.[0]} -> ${after[0]?.values?.[0]?.[0]}`);
     res.json({ success: true });
   } catch (e) {
+    console.error(`[DELETE ERROR]`, e.message);
     res.status(500).json({ error: e.message });
   }
 });

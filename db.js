@@ -19,10 +19,13 @@ async function getDb() {
 }
 
 function saveDb() {
-  if (!db) return;
+  if (!db) { console.log('[saveDb] SKIP — db is null'); return; }
   const data = db.export();
   const buffer = Buffer.from(data);
+  const before = fs.existsSync(DB_PATH) ? fs.statSync(DB_PATH).size : 0;
   fs.writeFileSync(DB_PATH, buffer);
+  const after = fs.statSync(DB_PATH).size;
+  console.log(`[saveDb] exported=${data.length}B file=${before}B->${after}B ok`);
 }
 
 async function initDb() {
