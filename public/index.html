@@ -408,9 +408,9 @@ function renderProductCard(p, cardStyle) {
   const base = (label, val) => `<div class="product-card-footer-base"><span class="product-card-base-label">${label}</span><span class="product-card-base-val">${val}</span></div>`;
 
   if (cardStyle === 'pizza') {
-    return `<div class="pizza-card-item" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price != null ? p.price : ''}" data-product-image="${p.image || ''}">
+    return `<div class="pizza-card-item" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price != null ? p.price : ''}" data-product-image="${p.imageUrl || ''}">
       <div class="pizza-card-img" style="background:#1c1c1c">
-        <div class="pizza-main-emoji"><img class="flavour-card-img" src="${p.image || 'logo.png'}" alt="${p.name}"></div>
+        <div class="pizza-main-emoji"><img class="flavour-card-img" src="${p.imageUrl || 'logo.png'}" alt="${p.name}"></div>
         <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
       </div>
       <div class="pizza-card-body">
@@ -421,7 +421,7 @@ function renderProductCard(p, cardStyle) {
             <div class="pizza-card-price">₹${p.price}</div>
             <div class="pizza-card-base">Hand Made Base · Hand Tossed</div>
           </div>
-          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price}" data-product-image="${p.image || ''}">Add to Cart</button>
+          <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price}" data-product-image="${p.imageUrl || ''}">Add to Cart</button>
         </div>
       </div>
     </div>`;
@@ -429,9 +429,9 @@ function renderProductCard(p, cardStyle) {
 
   if (cardStyle === 'flavour') {
     const hasPrice = p.price != null;
-    return `<div class="flavour-card" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${hasPrice ? p.price : ''}" data-product-image="${p.image || ''}">
+    return `<div class="flavour-card" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${hasPrice ? p.price : ''}" data-product-image="${p.imageUrl || ''}">
       <div class="flavour-card-img-wrap">
-        <img class="flavour-card-img" src="${p.image || 'logo.png'}" alt="${p.name}">
+        <img class="flavour-card-img" src="${p.imageUrl || 'logo.png'}" alt="${p.name}">
         <div class="pizza-veg-badge"><div class="pizza-veg-dot"></div></div>
       </div>
       <div class="flavour-card-body">
@@ -443,7 +443,7 @@ function renderProductCard(p, cardStyle) {
           <div style="text-align:right">
             <div class="flavour-card-base">for 1 pound</div>
             ${p.tag ? `<div class="flavour-veg-tag">● ${p.tag}</div>` : ''}
-            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price}" data-product-image="${p.image || ''}" style="margin-top:4px">Add to Cart</button>
+            <button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price}" data-product-image="${p.imageUrl || ''}" style="margin-top:4px">Add to Cart</button>
           </div>` : `
           <div class="flavour-card-price">Up Coming</div>
           <span class="occasion-card-tag">Coming Soon</span>`}
@@ -452,8 +452,8 @@ function renderProductCard(p, cardStyle) {
     </div>`;
   }
 
-  return `<div class="occasion-card" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price != null ? p.price : ''}" data-product-image="${p.image || ''}">
-    <img class="occasion-card-img" src="${p.image || 'logo.png'}" alt="${p.name}">
+  return `<div class="occasion-card" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price != null ? p.price : ''}" data-product-image="${p.imageUrl || ''}">
+    <img class="occasion-card-img" src="${p.imageUrl || 'logo.png'}" alt="${p.name}">
     <div class="occasion-card-body">
       <div class="occasion-card-name">${p.name}</div>
       <div class="occasion-card-desc">${p.description || ''}</div>
@@ -464,7 +464,7 @@ function renderProductCard(p, cardStyle) {
         </div>
         <div style="display:flex;align-items:center;gap:.5rem">
           ${p.tag ? `<span class="occasion-card-tag">${p.tag}</span>` : ''}
-          ${p.price != null ? `<button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price}" data-product-image="${p.image || ''}">Add to Cart</button>` : ''}
+          ${p.price != null ? `<button class="add-to-cart-btn add-to-cart-btn-sm" data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price}" data-product-image="${p.imageUrl || ''}">Add to Cart</button>` : ''}
         </div>
       </div>
     </div>

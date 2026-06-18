@@ -49,6 +49,8 @@ async function initDb() {
       description TEXT DEFAULT '',
       price REAL,
       image TEXT DEFAULT '',
+      image_data BLOB,
+      image_type TEXT DEFAULT 'image/jpeg',
       tag TEXT DEFAULT '',
       is_available INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -102,6 +104,8 @@ async function initDb() {
   `);
 
   try { await db.execute("ALTER TABLE order_items ADD COLUMN product_image TEXT DEFAULT ''"); } catch (e) {}
+  try { await db.execute("ALTER TABLE products ADD COLUMN image_data BLOB"); } catch (e) {}
+  try { await db.execute("ALTER TABLE products ADD COLUMN image_type TEXT DEFAULT 'image/jpeg'"); } catch (e) {}
 
   // Categories table
   await db.execute(`

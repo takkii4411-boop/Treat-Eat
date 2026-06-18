@@ -151,28 +151,62 @@ app.get('/api/products', async (req, res) => {
   const db = await getDb();
   const category = req.query.category;
   let result;
+  const cols = "id,name,category,description,price,image,image_data,image_type,tag,is_available,created_at";
   if (category) {
-    result = await db.execute("SELECT * FROM products WHERE category = ? AND is_available = 1 ORDER BY id", [category]);
+    result = await db.execute(`SELECT ${cols} FROM products WHERE category = ? AND is_available = 1 ORDER BY id`, [category]);
   } else {
-    result = await db.execute("SELECT * FROM products WHERE is_available = 1 ORDER BY id");
+    result = await db.execute(`SELECT ${cols} FROM products WHERE is_available = 1 ORDER BY id`);
   }
   const products = getRows(result).map(row => ({
     id: row[0], name: row[1], category: row[2], description: row[3],
-    price: row[4], image: row[5], tag: row[6], isAvailable: row[7] === 1
+    price: row[4], image: row[5],
+    imageUrl: (row[5] || row[6]) ? '/api/products/' + row[0] + '/image' : '',
+    tag: row[8], isAvailable: row[9] === 1
   }));
   res.json(products);
 });
 
+app.get('/api/products/:id/image', async (req, res) => {
+  try {
+    const db = await getDb();
+    const result = await db.execute("SELECT image_data, image_type, image FROM products WHERE id = ?", [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    const row = result.rows[0];
+    if (row[0]) {
+      const imgType = row[1] || 'image/jpeg';
+      res.setHeader('Content-Type', imgType);
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      const imgBuf = Buffer.from(row[0]);
+      res.send(imgBuf);
+    } else if (row[2]) {
+      const imgPath = path.join(__dirname, 'public', row[2]);
+      if (fs.existsSync(imgPath)) {
+        res.sendFile(imgPath);
+      } else {
+        res.status(404).json({ error: 'Image file not found' });
+      }
+    } else {
+      res.status(404).json({ error: 'No image' });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/products/:id', async (req, res) => {
   const db = await getDb();
-  const result = await db.execute("SELECT * FROM products WHERE id = ?", [req.params.id]);
+  const cols = "id,name,category,description,price,image,image_data,image_type,tag,is_available,created_at";
+  const result = await db.execute(`SELECT ${cols} FROM products WHERE id = ?`, [req.params.id]);
   if (result.rows.length === 0) {
     return res.status(404).json({ error: 'Product not found' });
   }
   const row = result.rows[0];
   res.json({
     id: row[0], name: row[1], category: row[2], description: row[3],
-    price: row[4], image: row[5], tag: row[6]
+    price: row[4], image: row[5], imageUrl: (row[5] || row[6]) ? '/api/products/' + row[0] + '/image' : '',
+    tag: row[8]
   });
 });
 
@@ -436,23 +470,30 @@ app.put('/api/admin/orders/:id/status', requireAdmin, async (req, res) => {
 // Admin Product Management
 app.get('/api/admin/products', requireAdmin, async (req, res) => {
   const db = await getDb();
-  const result = await db.execute("SELECT * FROM products ORDER BY id");
+  const cols = "id,name,category,description,price,image,image_data,image_type,tag,is_available,created_at";
+  const result = await db.execute(`SELECT ${cols} FROM products ORDER BY id`);
   const products = getRows(result).map(row => ({
     id: row[0], name: row[1], category: row[2], description: row[3],
-    price: row[4], image: row[5], tag: row[6], isAvailable: row[7] === 1
+    price: row[4], image: row[5], imageUrl: (row[5] || row[6]) ? '/api/products/' + row[0] + '/image' : '',
+    tag: row[8], isAvailable: row[9] === 1
   }));
   res.json(products);
 });
 
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
   try {
-    let { name, category, description, price, image, tag, is_available } = req.body;
+    let { name, category, description, price, image, image_data, image_type, tag, is_available } = req.body;
     if (!name || !category) {
       return res.status(400).json({ error: 'Name and category are required' });
     }
     const db = await getDb();
-    const insert = await db.execute("INSERT INTO products (name, category, description, price, image, tag, is_available) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [name, category, description || '', price != null ? parseFloat(price) : null, image || '', tag || '', is_available != null ? (is_available ? 1 : 0) : 1]);
+    let imgBuffer = null;
+    if (image_data) {
+      imgBuffer = Buffer.from(image_data, 'base64');
+    }
+    // If image_data was provided, clear the path-based image to avoid confusion
+    const insert = await db.execute("INSERT INTO products (name, category, description, price, image, image_data, image_type, tag, is_available) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [name, category, description || '', price != null ? parseFloat(price) : null, imgBuffer ? '' : (image || ''), imgBuffer, image_type || 'image/jpeg', tag || '', is_available != null ? (is_available ? 1 : 0) : 1]);
     res.json({ success: true, id: Number(insert.lastInsertRowid) });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -461,14 +502,18 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
 
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
   try {
-    let { name, category, description, price, image, tag, is_available } = req.body;
+    let { name, category, description, price, image, image_data, image_type, tag, is_available } = req.body;
     const db = await getDb();
     const existing = await db.execute("SELECT id FROM products WHERE id = ?", [req.params.id]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    await db.execute("UPDATE products SET name=?, category=?, description=?, price=?, image=?, tag=?, is_available=? WHERE id=?",
-      [name, category, description || '', price != null ? parseFloat(price) : null, image || '', tag || '', is_available != null ? (is_available ? 1 : 0) : 1, req.params.id]);
+    let imgBuffer = null;
+    if (image_data) {
+      imgBuffer = Buffer.from(image_data, 'base64');
+    }
+    await db.execute("UPDATE products SET name=?, category=?, description=?, price=?, image=?, image_data=?, image_type=?, tag=?, is_available=? WHERE id=?",
+      [name, category, description || '', price != null ? parseFloat(price) : null, imgBuffer ? '' : (image || ''), imgBuffer, image_type || 'image/jpeg', tag || '', is_available != null ? (is_available ? 1 : 0) : 1, req.params.id]);
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -489,9 +534,27 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
   }
 });
 
+async function cleanupOldData() {
+  try {
+    const db = await getDb();
+    const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
+    const oldOrders = await db.execute("SELECT id FROM orders WHERE created_at < ?", [sixMonthsAgo]);
+    const ids = oldOrders.rows.map(r => r[0]);
+    if (ids.length > 0) {
+      await db.execute(`DELETE FROM order_items WHERE order_id IN (${ids.map(() => '?').join(',')})`, ids);
+      await db.execute(`DELETE FROM orders WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
+    }
+    await db.execute("DELETE FROM cart WHERE created_at < ?", [sixMonthsAgo]);
+    if (ids.length > 0) console.log(`[cleanup] deleted ${ids.length} old orders + cart items (>6 months)`);
+  } catch (e) {
+    console.error('[cleanup] error:', e.message);
+  }
+}
+
 async function start() {
   const db = await initDb();
   app.set('db', db);
+  await cleanupOldData();
   app.listen(PORT, () => {
     console.log(`Treat & Eat server running at http://localhost:${PORT}`);
   });

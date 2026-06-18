@@ -227,6 +227,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text)}
 let editingProductId = null;
 let editingCategoryId = null;
 let currentTab = 'orders';
+let uploadedImageData = null;
+let uploadedImageType = '';
 
 async function checkAdmin() {
   const data = await fetch('/api/auth/me').then(r => r.json());
@@ -418,6 +420,8 @@ async function loadProducts() {
 
 function openProductModal(product) {
   editingProductId = product ? product.id : null;
+  uploadedImageData = null;
+  uploadedImageType = '';
   document.getElementById('modal-title').textContent = product ? 'Edit' : 'Add';
   document.getElementById('modal-save-btn').textContent = product ? 'Update' : 'Save';
   document.getElementById('pf-name').value = product ? product.name : '';
@@ -430,8 +434,8 @@ function openProductModal(product) {
 
   const preview = document.getElementById('pf-image-preview');
   const img = preview.querySelector('img');
-  if (product && product.image) {
-    img.src = product.image;
+  if (product && (product.imageUrl || product.image)) {
+    img.src = product.imageUrl || product.image;
     preview.style.display = 'block';
   } else {
     preview.style.display = 'none';
@@ -448,6 +452,8 @@ function closeProductModal() {
   const preview = document.getElementById('pf-image-preview');
   preview.style.display = 'none';
   preview.querySelector('img').src = '';
+  uploadedImageData = null;
+  uploadedImageType = '';
   editingProductId = null;
 }
 
@@ -471,7 +477,9 @@ document.getElementById('product-form').addEventListener('submit', async functio
     category: document.getElementById('pf-category').value,
     description: document.getElementById('pf-desc').value.trim(),
     price: document.getElementById('pf-price').value ? parseFloat(document.getElementById('pf-price').value) : null,
-    image: document.getElementById('pf-image').value.trim(),
+    image: uploadedImageData ? '' : document.getElementById('pf-image').value.trim(),
+    image_data: uploadedImageData,
+    image_type: uploadedImageType,
     tag: document.getElementById('pf-tag').value.trim(),
     is_available: document.getElementById('pf-available').checked
   };
@@ -486,6 +494,8 @@ document.getElementById('product-form').addEventListener('submit', async functio
   }).then(r => r.json());
 
   if (data.success) {
+    uploadedImageData = null;
+    uploadedImageType = '';
     closeProductModal();
     loadProducts();
   } else {
@@ -493,8 +503,8 @@ document.getElementById('product-form').addEventListener('submit', async functio
   }
 });
 
-// Image upload & preview
-document.getElementById('pf-image-file').addEventListener('change', async function() {
+// Image upload & preview — reads file as base64 for direct DB storage
+document.getElementById('pf-image-file').addEventListener('change', function() {
   const file = this.files[0];
   if (!file) return;
 
@@ -502,20 +512,14 @@ document.getElementById('pf-image-file').addEventListener('change', async functi
   const img = preview.querySelector('img');
 
   const reader = new FileReader();
-  reader.onload = function(e) { img.src = e.target.result; preview.style.display = 'block'; };
+  reader.onload = function(e) {
+    img.src = e.target.result;
+    preview.style.display = 'block';
+    const base64 = e.target.result.split(',')[1];
+    uploadedImageData = base64;
+    uploadedImageType = file.type;
+  };
   reader.readAsDataURL(file);
-
-  const formData = new FormData();
-  formData.append('image', file);
-  formData.append('category', document.getElementById('pf-category').value || 'occasion');
-
-  const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
-  const data = await res.json();
-  if (data.path) {
-    document.getElementById('pf-image').value = data.path;
-  } else {
-    alert(data.error || 'Upload failed');
-  }
 });
 
 document.getElementById('pf-category').addEventListener('change', function() {
