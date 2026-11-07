@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Treat & Eat</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--rose:#b03060;--rose-light:#e8a0bf;--rose-pale:#fde8f0;--ivory:#faf5ef;--ivory2:#f3ece2;--dark:#1a0a12;--dark2:#2d1520;--gold:#c9944a;--gold2:#e8c17a;--text:#1a0a12;--muted:#7a5060}
+body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--text)}
+.admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.admin-sidebar{background:var(--dark);padding:2rem 1.5rem;color:#fff;position:sticky;top:0;height:100vh;z-index:100}
+.admin-sidebar h2{font-family:'Great Vibes',cursive;font-size:1.5rem;color:var(--rose-light);margin-bottom:2rem}
+.admin-sidebar .nav-item{display:block;padding:.6rem 0;color:rgba(255,255,255,0.6);text-decoration:none;font-size:.85rem;cursor:pointer;transition:color .2s;border:none;background:none;width:100%;text-align:left}
+.admin-sidebar .nav-item:hover,.admin-sidebar .nav-item.active{color:#fff}
+.admin-main{padding:2rem;background:var(--ivory);min-height:100vh}
+.admin-main h1{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--dark2);margin-bottom:.3rem}
+.admin-main h1 em{font-style:italic;color:var(--rose)}
+.admin-sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border:none;border-radius:8px;font-size:.8rem;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .2s,transform .1s;text-decoration:none}
+.btn-primary{background:var(--rose);color:#fff}
+.btn-primary:hover{background:#8f2448;transform:translateY(-1px)}
+.btn-success{background:#2e7d32;color:#fff}
+.btn-success:hover{background:#1b5e20}
+.btn-danger{background:#c62828;color:#fff}
+.btn-danger:hover{background:#b71c1c}
+.btn-outline{background:transparent;border:1px solid rgba(176,48,96,0.3);color:var(--rose)}
+.btn-outline:hover{background:var(--rose-pale)}
+.btn-sm{padding:.3rem .7rem;font-size:.75rem}
+.status-select{padding:.4rem .6rem;border:1px solid rgba(176,48,96,0.2);border-radius:8px;font-size:.8rem;font-family:'DM Sans',sans-serif;background:#fff;cursor:pointer}
+.admin-order-card{background:#fff;border:1px solid rgba(176,48,96,0.1);border-radius:16px;padding:1.3rem 1.5rem;margin-bottom:1rem}
+.admin-order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;flex-wrap:wrap;gap:.5rem}
+.admin-order-meta{font-size:.8rem;color:var(--muted)}
+.admin-order-meta strong{color:var(--dark2)}
+.admin-table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;border:1px solid rgba(176,48,96,0.1)}
+.admin-table th,.admin-table td{padding:.8rem 1rem;text-align:left;font-size:.82rem}
+.admin-table th{background:var(--dark2);color:#fff;font-weight:500;letter-spacing:.05em;text-transform:uppercase;font-size:.7rem}
+.admin-table td{border-bottom:1px solid rgba(176,48,96,0.06)}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table .actions{display:flex;gap:.4rem}
+.empty-state{padding:3rem;text-align:center;background:#fff;border-radius:16px;border:1px solid rgba(176,48,96,0.1)}
+.empty-state .big-icon{font-size:3rem;margin-bottom:.8rem}
+.empty-state h3{font-size:1.1rem;color:var(--dark2);margin-bottom:.4rem}
+.empty-state p{color:var(--muted);font-size:.85rem}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:2rem;width:90%;max-width:520px;max-height:85vh;overflow-y:auto}
+.modal h2{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:var(--dark2);margin-bottom:1.2rem}
+.modal h2 em{font-style:italic;color:var(--rose)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.75rem;font-weight:500;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.06em}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:.6rem .8rem;border:1px solid rgba(176,48,96,0.2);border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;background:#fff;color:var(--text)}
+.form-group textarea{min-height:60px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-actions{display:flex;gap:.7rem;margin-top:1.5rem}
+.badge{display:inline-block;padding:.2rem .5rem;border-radius:999px;font-size:.65rem;font-weight:500;letter-spacing:.04em}
+.badge-available{background:#e8f5e9;color:#2e7d32}
+.badge-unavailable{background:#fbe9e7;color:#c62828}
+.status-pending{color:#f57f17}
+.status-confirmed{color:#1565c0}
+.status-preparing{color:#e65100}
+.status-out-for-delivery{color:#6a1b9a}
+.status-delivered{color:#2e7d32}
+.status-cancelled{color:#c62828}
+@media(max-width:768px){
+  .admin-sidebar{position:static;width:100%;padding:1rem 1.5rem;height:auto}
+  .admin-sidebar .nav-item{display:inline-block;padding:.4rem .6rem;font-size:.8rem}
+  .admin-main{padding:1rem}
+  .admin-layout{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div class="admin-sidebar">
+    <h2>Treat & Eat</h2>
+    <button class="nav-item active" onclick="switchTab('orders')">📦 Orders</button>
+    <button class="nav-item" onclick="switchTab('products')">🧁 Products</button>
+    <a href="/orders.html" class="nav-item">👤 My Orders</a>
+    <a href="/cart.html" class="nav-item">🛒 Cart</a>
+    <a href="/" class="nav-item">🏠 Home</a>
+    <a href="/" class="nav-item" id="admin-logout">🚪 Logout</a>
+  </div>
+  <div class="admin-main">
+    <h1>Admin <em>Dashboard</em></h1>
+    <p class="admin-sub" id="admin-subtitle">Manage orders and products</p>
+
+    <!-- Orders Tab -->
+    <div class="tab-content active" id="tab-orders">
+      <div id="admin-orders"></div>
+    </div>
+
+    <!-- Products Tab -->
+    <div class="tab-content" id="tab-products">
+      <div style="margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+        <span id="product-count" style="font-size:.85rem;color:var(--muted)"></span>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="openCategoryModal()">🏷️ Categories</button>
+          <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
+        </div>
+      </div>
+      <div id="admin-products"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="adminOrderModal" onclick="if(event.target===this)closeAdminOrderDetail()">
+  <div class="modal" style="max-width:500px">
+    <h2>Order <em>Details</em></h2>
+    <div id="adminOrderDetailBody"></div>
+    <div style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="closeAdminOrderDetail()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal">
+    <h2><em id="modal-title">Add</em> Product</h2>
+    <form id="product-form">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" id="pf-name" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="pf-category" required>
+            <option value="">Select</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price (₹)</label>
+          <input type="number" id="pf-price" step="0.01" placeholder="Leave empty for NA">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="pf-desc"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Image</label>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <input type="text" id="pf-image" placeholder="Path or upload below" style="flex:1;min-width:140px">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;white-space:nowrap">
+            📁 Browse…
+            <input type="file" id="pf-image-file" accept="image/*" style="display:none">
+          </label>
+        </div>
+        <div id="pf-image-preview" style="margin-top:.5rem;display:none">
+          <img src="" alt="Preview" style="max-width:120px;max-height:80px;border-radius:8px;border:1px solid rgba(176,48,96,0.15)">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tag</label>
+          <input type="text" id="pf-tag" placeholder="e.g. 100% Veg">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="pf-available" checked>
+          Available for order
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="modal-save-btn">Save</button>
+        <button type="button" class="btn btn-outline" onclick="closeProductModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Category List Modal -->
+<div class="modal-overlay" id="category-modal">
+  <div class="modal" style="max-width:600px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h2><em>Manage</em> Categories</h2>
+      <button class="btn btn-primary btn-sm" onclick="openCategoryForm()">+ Add</button>
+    </div>
+    <div id="category-list"></div>
+    <div style="margin-top:1rem">
+      <button class="btn btn-outline btn-sm" onclick="closeCategoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Form Modal -->
+<div class="modal-overlay" id="category-form-modal">
+  <div class="modal" style="max-width:460px">
+    <h2><em id="cat-modal-title">Add</em> Category</h2>
+    <form id="category-form">
+      <div class="form-group">
+        <label>Key *</label>
+        <input type="text" id="cf-key" required placeholder="e.g. cupcake">
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">Lowercase, no spaces. Used internally.</div>
+      </div>
+      <div class="form-group">
+        <label>Label *</label>
+        <input type="text" id="cf-label" required placeholder="e.g. Cupcakes">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Icon</label>
+          <input type="text" id="cf-icon" placeholder="e.g. 🧁">
+        </div>
+        <div class="form-group">
+          <label>Sort Order</label>
+          <input type="number" id="cf-sort" placeholder="0" value="0">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="cat-modal-save-btn">Save</button>
+        <button type="button" class="btn btn-outline" onclick="closeCategoryForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+let editingProductId = null;
+let editingCategoryId = null;
+let currentTab = 'orders';
+let uploadedImageData = null;
+let uploadedImageType = '';
+
+async function checkAdmin() {
+  const data = await fetch('/api/auth/me').then(r => r.json());
+  if (!data.user || !data.user.isAdmin) {
+    window.location.href = '/login.html';
+    return;
+  }
+  loadOrders();
+  await loadCategories();
+  loadProducts();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.textContent.trim().toLowerCase().includes(tab === 'orders' ? 'order' : 'product')) {
+      el.classList.add('active');
+    }
+  });
+  const sub = document.getElementById('admin-subtitle');
+  sub.textContent = tab === 'orders' ? 'View and manage all customer orders' : 'Add, edit or remove products';
+}
+
+// ----- ORDERS -----
+async function loadOrders() {
+  const orders = await fetch('/api/admin/orders').then(r => r.json());
+  adminOrders = orders;
+  const container = document.getElementById('admin-orders');
+
+  if (orders.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="big-icon">📦</div><h3>No orders yet</h3><p>Waiting for customers to place orders.</p></div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(order => {
+    const itemsHtml = order.items.map(item =>
+      `<div class="item-row" style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;padding:.3rem 0">
+        <img src="${item.productImage || 'logo.png'}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0">
+        <span style="flex:1">${item.productName} × ${item.quantity}</span>
+        <span style="font-weight:500;color:var(--rose);white-space:nowrap">₹${item.price * item.quantity}</span>
+      </div>`
+    ).join('');
+
+    return `<div class="admin-order-card" style="cursor:pointer" onclick="showAdminOrderDetail(${order.id})">
+      <div class="admin-order-header">
+        <div>
+          <strong style="font-size:1rem">Order #${order.id}</strong>
+          <div class="admin-order-meta">${new Date(order.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+        <select class="status-select" onclick="event.stopPropagation()" onchange="updateStatus(${order.id}, this.value)">
+          <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+          <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+          <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Preparing</option>
+          <option value="out for delivery" ${order.status === 'out for delivery' ? 'selected' : ''}>Out for Delivery</option>
+          <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+          <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+        </select>
+      </div>
+      <div class="admin-order-meta">
+        <strong>Customer:</strong> ${order.userName} (${order.userEmail})<br>
+        <strong>Phone:</strong> ${order.phone}<br>
+        <strong>Address:</strong> ${order.deliveryAddress}
+      </div>
+      <div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid rgba(176,48,96,0.08)">${itemsHtml}</div>
+      <div style="margin-top:.5rem;font-weight:600;color:var(--rose)">Total: ₹${order.total}</div>
+    </div>`;
+  }).join('');
+}
+
+let adminOrders = [];
+
+function showAdminOrderDetail(orderId) {
+  const order = adminOrders.find(o => o.id === orderId);
+  if (!order) return;
+  const itemsHtml = order.items.map(item =>
+    `<div class="item-row" style="display:flex;align-items:center;gap:.6rem;padding:.3rem 0;font-size:.82rem;border-bottom:1px solid rgba(0,0,0,0.04)">
+      <img src="${item.productImage || 'logo.png'}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0">
+      <span style="flex:1">${item.productName} × ${item.quantity}</span>
+      <span style="color:var(--rose);font-weight:500;white-space:nowrap">₹${item.price * item.quantity}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('adminOrderDetailBody').innerHTML = `
+    <div style="margin-top:.8rem">
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Order</span><span style="font-weight:500">#${order.id}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Date</span><span>${new Date(order.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Status</span><span style="font-weight:500">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></div>
+      <div style="margin:.6rem 0;padding:.5rem 0;border-top:1px solid rgba(176,48,96,0.1);border-bottom:1px solid rgba(176,48,96,0.1)">${itemsHtml}</div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.9rem;font-weight:600"><span style="color:var(--muted)">Total</span><span style="color:var(--rose)">₹${order.total}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Customer</span><span style="text-align:right;max-width:250px">${order.userName}<br><span style="font-size:.78rem;color:var(--muted)">${order.userEmail}</span></span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Phone</span><span>${order.phone}</span></div>
+      <div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Address</span><span style="text-align:right;max-width:250px">${order.deliveryAddress}</span></div>
+      ${order.notes ? `<div class="row" style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.85rem"><span style="color:var(--muted)">Notes</span><span style="text-align:right;max-width:250px">${order.notes}</span></div>` : ''}
+    </div>
+  `;
+  document.getElementById('adminOrderModal').classList.add('open');
+}
+
+function closeAdminOrderDetail() {
+  document.getElementById('adminOrderModal').classList.remove('open');
+}
+
+async function updateStatus(orderId, status) {
+  try {
+    const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadOrders();
+    } else {
+      alert(data.error || 'Failed to update status');
+      loadOrders();
+    }
+  } catch (e) {
+    alert('Network error — status not saved');
+    loadOrders();
+  }
+}
+
+// ----- CATEGORIES -----
+let categories = [];
+
+async function loadCategories() {
+  categories = await fetch('/api/categories').then(r => r.json());
+  const sel = document.getElementById('pf-category');
+  sel.innerHTML = '<option value="">Select</option>' +
+    categories.map(c => `<option value="${c.key}">${c.icon} ${c.label}</option>`).join('');
+  return categories;
+}
+
+// ----- PRODUCTS -----
+async function loadProducts() {
+  const [products, cats] = await Promise.all([
+    fetch('/api/admin/products').then(r => r.json()),
+    loadCategories()
+  ]);
+  const container = document.getElementById('admin-products');
+  document.getElementById('product-count').textContent = `${products.length} product(s)`;
+
+  if (products.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="big-icon">🧁</div><h3>No products</h3><p>Add your first product.</p></div>';
+    return;
+  }
+
+  const grouped = {};
+  for (const cat of cats) grouped[cat.key] = [];
+
+  for (const p of products) {
+    if (grouped[p.category]) grouped[p.category].push(p);
+    else grouped[p.category] = [p];
+  }
+
+  let html = '';
+  for (const cat of cats) {
+    const items = grouped[cat.key] || [];
+    if (items.length === 0) continue;
+    html += `<div class="product-category-section" style="margin-bottom:2rem">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;color:var(--dark2);margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem">
+        <span>${cat.icon}</span> ${cat.label}
+        <span style="font-size:.75rem;color:var(--muted);font-weight:400">(${items.length})</span>
+      </h3>
+      <table class="admin-table">
+        <thead><tr>
+          <th>ID</th><th>Name</th><th>Price</th><th>Tag</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody>${items.map(p => `<tr>
+          <td>${p.id}</td>
+          <td><strong>${p.name}</strong></td>
+          <td>${p.price != null ? '₹'+p.price : '—'}</td>
+          <td style="font-size:.75rem;color:var(--muted)">${p.tag || '—'}</td>
+          <td><span class="badge ${p.isAvailable ? 'badge-available' : 'badge-unavailable'}">${p.isAvailable ? 'Available' : 'Unavailable'}</span></td>
+          <td class="actions">
+            <button class="btn btn-outline btn-sm" onclick="editProduct(${p.id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">Del</button>
+          </td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function openProductModal(product) {
+  editingProductId = product ? product.id : null;
+  uploadedImageData = null;
+  uploadedImageType = '';
+  document.getElementById('modal-title').textContent = product ? 'Edit' : 'Add';
+  document.getElementById('modal-save-btn').textContent = product ? 'Update' : 'Save';
+  document.getElementById('pf-name').value = product ? product.name : '';
+  document.getElementById('pf-category').value = product ? product.category : '';
+  document.getElementById('pf-price').value = product && product.price != null ? product.price : '';
+  document.getElementById('pf-desc').value = product ? product.description : '';
+  document.getElementById('pf-image').value = product ? product.image : '';
+  document.getElementById('pf-tag').value = product ? product.tag : '';
+  document.getElementById('pf-available').checked = product ? product.isAvailable : true;
+
+  const preview = document.getElementById('pf-image-preview');
+  const img = preview.querySelector('img');
+  if (product && (product.imageUrl || product.image)) {
+    img.src = product.imageUrl || product.image;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+    img.src = '';
+  }
+  document.getElementById('pf-image-file').value = '';
+
+  document.getElementById('product-modal').classList.add('open');
+}
+
+function closeProductModal() {
+  document.getElementById('product-modal').classList.remove('open');
+  document.getElementById('pf-image-file').value = '';
+  const preview = document.getElementById('pf-image-preview');
+  preview.style.display = 'none';
+  preview.querySelector('img').src = '';
+  uploadedImageData = null;
+  uploadedImageType = '';
+  editingProductId = null;
+}
+
+async function editProduct(id) {
+  const products = await fetch('/api/admin/products').then(r => r.json());
+  const product = products.find(p => p.id === id);
+  if (product) openProductModal(product);
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  const data = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' }).then(r => r.json());
+  if (data.success) loadProducts();
+  else alert(data.error || 'Failed to delete');
+}
+
+document.getElementById('product-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('pf-name').value.trim(),
+    category: document.getElementById('pf-category').value,
+    description: document.getElementById('pf-desc').value.trim(),
+    price: document.getElementById('pf-price').value ? parseFloat(document.getElementById('pf-price').value) : null,
+    image: uploadedImageData ? '' : document.getElementById('pf-image').value.trim(),
+    image_data: uploadedImageData,
+    image_type: uploadedImageType,
+    tag: document.getElementById('pf-tag').value.trim(),
+    is_available: document.getElementById('pf-available').checked
+  };
+
+  const url = editingProductId ? `/api/admin/products/${editingProductId}` : '/api/admin/products';
+  const method = editingProductId ? 'PUT' : 'POST';
+
+  const data = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+
+  if (data.success) {
+    uploadedImageData = null;
+    uploadedImageType = '';
+    closeProductModal();
+    loadProducts();
+  } else {
+    alert(data.error || 'Failed to save product');
+  }
+});
+
+// Image upload & preview — reads file as base64 for direct DB storage
+document.getElementById('pf-image-file').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+
+  const preview = document.getElementById('pf-image-preview');
+  const img = preview.querySelector('img');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    img.src = e.target.result;
+    preview.style.display = 'block';
+    const base64 = e.target.result.split(',')[1];
+    uploadedImageData = base64;
+    uploadedImageType = file.type;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('pf-category').addEventListener('change', function() {
+  const preview = document.getElementById('pf-image-preview');
+  preview.style.display = 'none';
+  preview.querySelector('img').src = '';
+});
+
+// ----- CATEGORY MANAGEMENT -----
+async function openCategoryModal() {
+  const list = document.getElementById('category-list');
+  list.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted)">Loading…</div>';
+  document.getElementById('category-modal').classList.add('open');
+
+  const cats = await fetch('/api/categories').then(r => r.json());
+  if (cats.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="big-icon">🏷️</div><h3>No categories</h3><p>Add your first category.</p></div>';
+    return;
+  }
+  list.innerHTML = `<table class="admin-table">
+    <thead><tr><th>Icon</th><th>Key</th><th>Label</th><th>Order</th><th>Actions</th></tr></thead>
+    <tbody>${cats.map(c => `<tr>
+      <td style="font-size:1.2rem">${c.icon || '—'}</td>
+      <td><code style="font-size:.78rem">${c.key}</code></td>
+      <td><strong>${c.label}</strong></td>
+      <td>${c.sortOrder}</td>
+      <td class="actions">
+        <button class="btn btn-outline btn-sm" onclick="openCategoryForm(${c.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.id},'${c.key}')">Del</button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function closeCategoryModal() {
+  document.getElementById('category-modal').classList.remove('open');
+}
+
+function openCategoryForm(catId) {
+  editingCategoryId = null;
+  document.getElementById('cf-key').readOnly = false;
+  document.getElementById('cf-key').value = '';
+  document.getElementById('cf-label').value = '';
+  document.getElementById('cf-icon').value = '';
+  document.getElementById('cf-sort').value = 0;
+  document.getElementById('cat-modal-title').textContent = 'Add';
+  document.getElementById('cat-modal-save-btn').textContent = 'Save';
+
+  if (catId) {
+    const cat = categories.find(c => c.id === catId);
+    if (cat) {
+      editingCategoryId = cat.id;
+      document.getElementById('cf-key').value = cat.key;
+      document.getElementById('cf-label').value = cat.label;
+      document.getElementById('cf-icon').value = cat.icon || '';
+      document.getElementById('cf-sort').value = cat.sortOrder || 0;
+      document.getElementById('cat-modal-title').textContent = 'Edit';
+      document.getElementById('cat-modal-save-btn').textContent = 'Update';
+    }
+  }
+  document.getElementById('category-form-modal').classList.add('open');
+}
+
+function closeCategoryForm() {
+  document.getElementById('category-form-modal').classList.remove('open');
+  editingCategoryId = null;
+}
+
+async function deleteCategory(id, key) {
+  if (!confirm(`Delete category "${key}"?\nProducts in this category will be moved to "uncategorized".`)) return;
+  const data = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' }).then(r => r.json());
+  if (data.success) {
+    openCategoryModal();
+    loadProducts();
+  } else {
+    alert(data.error || 'Failed to delete');
+  }
+}
+
+document.getElementById('category-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const payload = {
+    key: document.getElementById('cf-key').value.trim(),
+    label: document.getElementById('cf-label').value.trim(),
+    icon: document.getElementById('cf-icon').value.trim(),
+    sort_order: parseInt(document.getElementById('cf-sort').value) || 0
+  };
+
+  const url = editingCategoryId ? `/api/admin/categories/${editingCategoryId}` : '/api/admin/categories';
+  const method = editingCategoryId ? 'PUT' : 'POST';
+
+  const data = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+
+  if (data.success) {
+    closeCategoryForm();
+    openCategoryModal();
+    loadProducts();
+  } else {
+    alert(data.error || 'Failed to save category');
+  }
+});
+
+document.getElementById('admin-logout')?.addEventListener('click', async function(e) {
+  e.preventDefault();
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/';
+});
+
+checkAdmin();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "treat-and-eat",
+  "version": "1.0.0",
+  "description": "Treat & Eat Cake Shop & Bakery - Online Ordering System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.0",
+    "express-session": "^1.18.1",
+    "multer": "^2.2.0"
+  }
+}
